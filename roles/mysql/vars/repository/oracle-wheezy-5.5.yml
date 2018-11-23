@@ -1,0 +1,5 @@
+---
+# Mysql Oracle 5.5
+
+# -> use debian.
+mysql_repo: {}

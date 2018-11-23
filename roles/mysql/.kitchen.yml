@@ -1,0 +1,203 @@
+---
+driver:
+  name: docker
+  hostname: mysql
+  privileged: true
+  use_sudo: false
+  cap_add:
+    - ALL
+
+transport:
+  max_ssh_sessions: 6
+
+provisioner:
+  name: ansible_playbook
+  idempotency_test: true
+  require_ansible_repo: false
+  require_chef_for_busser: false
+  require_ruby_for_busser: true
+  ansible_verbose: false
+  ansible_verbosity: 2
+  ansible_cfg_path: test/ansible.cfg
+  hosts: localhost
+  sudo_command: sudo -E -H  # preserve-env + set the HOME environment variable of target user
+  ignore_extensions_from_root: [".git",".idea",".kitchen.yml"]
+  ignore_paths_from_root: [".git",".idea",".kitchen"]
+  ansible_extra_flags: <%= ENV['ANSIBLE_EXTRA_FLAGS'] %>
+  recursive_additional_copy_path: test/datas
+
+platforms:
+
+  - name: debian-wheezy-2.3
+    driver_config:
+      memory: 256M
+      image: hub.alterway.fr/kitchen-ansible:wheezy-2.3
+
+  - name: debian-jessie-2.3
+    driver_config:
+      memory: 256M
+      image: hub.alterway.fr/kitchen-ansible:jessie-2.3
+      run_command: /sbin/init
+
+  - name: debian-stretch-2.3
+    driver_config:
+      memory: 256M
+      image: hub.alterway.fr/kitchen-ansible:stretch-2.3
+      run_command: /sbin/init
+
+  - name: ubuntu-trusty-2.3
+    driver_config:
+      memory: 256M
+      image: hub.alterway.fr/kitchen-ansible:trusty-2.3
+
+#  - name: ubuntu-xenial-2.3
+#    driver_config:
+#      image: hub.alterway.fr/kitchen-ansible:xenial-2.3
+
+verifier:
+  ruby_bindir: '/usr/bin'
+
+suites:
+  - name: percona56
+    provisioner:
+      playbook: test/playbooks/standalone.yml
+      extra_vars:
+        mysql_provider: 'percona'
+        mysql_version: '5.6'
+
+  - name: percona56cluster
+    provisioner:
+      playbook: test/playbooks/cluster.yml
+      extra_vars:
+        mysql_provider: 'percona'
+        mysql_version: '5.6'
+    excludes:
+      - debian-stretch-2.3
+
+  - name: percona57
+    provisioner:
+      playbook: test/playbooks/standalone.yml
+      extra_vars:
+        mysql_provider: 'percona'
+        mysql_version: '5.7'
+
+  - name: percona57replication
+    provisioner:
+      playbook: test/playbooks/replication.yml
+      extra_vars:
+        mysql_provider: 'percona'
+        mysql_version: '5.7'
+
+  - name: percona57cluster
+    provisioner:
+      playbook: test/playbooks/cluster.yml
+      extra_vars:
+        mysql_provider: 'percona'
+        mysql_version: '5.7'
+
+  - name: oracle55
+    provisioner:
+      playbook: test/playbooks/standalone.yml
+      extra_vars:
+        mysql_provider: 'oracle'
+        mysql_version: '5.5'
+    includes:
+      - debian-wheezy-2.3
+      - debian-jessie-2.3
+
+  - name: oracle56
+    provisioner:
+      playbook: test/playbooks/standalone.yml
+      extra_vars:
+        mysql_provider: 'oracle'
+        mysql_version: '5.6'
+    excludes:
+      - ubuntu-xenial-2.3
+
+  - name: oracle57
+    provisioner:
+      playbook: test/playbooks/standalone.yml
+      extra_vars:
+        mysql_provider: 'oracle'
+        mysql_version: '5.7'
+
+  - name: oracle57replication
+    provisioner:
+      playbook: test/playbooks/replication.yml
+      extra_vars:
+        mysql_provider: 'oracle'
+        mysql_version: '5.7'
+
+  - name: maria55
+    provisioner:
+      playbook: test/playbooks/standalone.yml
+      extra_vars:
+        mysql_provider: 'mariadb'
+        mysql_version: '5.5'
+    excludes:
+      - debian-jessie-2.3
+
+  - name: maria100
+    provisioner:
+      playbook: test/playbooks/standalone.yml
+      extra_vars:
+        mysql_provider: 'mariadb'
+        mysql_version: '10.0'
+
+  - name: maria100cluster
+    provisioner:
+      playbook: test/playbooks/cluster.yml
+      extra_vars:
+        mysql_provider: 'mariadb'
+        mysql_version: '10.0'
+    excludes:
+      - debian-stretch-2.3
+
+  - name: maria101
+    provisioner:
+      playbook: test/playbooks/standalone.yml
+      extra_vars:
+        mysql_provider: 'mariadb'
+        mysql_version: '10.1'
+
+  - name: maria101replication
+    provisioner:
+      playbook: test/playbooks/replication.yml
+      extra_vars:
+        mysql_provider: 'mariadb'
+        mysql_version: '10.1'
+
+  - name: maria101cluster
+    provisioner:
+      playbook: test/playbooks/cluster.yml
+      extra_vars:
+        mysql_provider: 'mariadb'
+        mysql_version: '10.1'
+
+  - name: maria102
+    provisioner:
+      playbook: test/playbooks/standalone.yml
+      extra_vars:
+        mysql_provider: 'mariadb'
+        mysql_version: '10.2'
+
+  - name: maria102replication
+    provisioner:
+      playbook: test/playbooks/replication.yml
+      extra_vars:
+        mysql_provider: 'mariadb'
+        mysql_version: '10.2'
+
+  - name: maria102cluster
+    provisioner:
+      playbook: test/playbooks/cluster.yml
+      extra_vars:
+        mysql_provider: 'mariadb'
+        mysql_version: '10.2'
+
+  - name: maria102custom
+    provisioner:
+      playbook: test/playbooks/custom.yml
+      extra_vars:
+        mysql_provider: 'mariadb'
+        mysql_version: '10.2'

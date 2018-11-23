@@ -1,0 +1,93 @@
+{% for ban_line in apache_ansible_managed %}
+{{ ban_line }}
+{% endfor %}
+
+# Block Bad Bots & Scrapers
+{% set  apache_badbot_useragent = apache_badbot_useragent_default|difference(apache_badbot.useragent_allowed|default([]))|union(apache_badbot.useragent|default([])) %}
+
+{% for item in apache_badbot_useragent -%}
+    SetEnvIfNoCase User-Agent "{{ item }}" bad_bot
+{% endfor -%}
+
+
+{% if apache_badbot['scanners'] is defined -%}
+# Vulnerability Scanners
+{% for scanner in apache_badbot['scanners'] -%}
+SetEnvIfNoCase User-Agent "{{ scanner }}" bad_bot
+{% endfor -%}
+{% endif -%}
+
+<Directory />
+  <Limit GET POST HEAD>
+  {% if apache_version.split('.')[1] == '4' -%}
+    <RequireAll>
+       Require all granted
+
+       {% if apache_badbot['cyveillance'] is defined and apache_badbot['cyveillance'] -%}
+       # Cyveillance
+       Require not ip 38.100.19.8/29
+       Require not ip 38.100.21.0/24
+       Require not ip 38.100.41.64/26
+       Require not ip 38.105.71.0/25
+       Require not ip 38.105.83.0/27
+       Require not ip 38.112.21.140/30
+       Require not ip 38.118.42.32/29
+       Require not ip 65.213.208.128/27
+       Require not ip 65.222.176.96/27
+       Require not ip 65.222.185.72/29
+
+       {% endif -%}
+       {% if apache_badbot['ip'] is defined -%}
+       # Agressive IP
+       {% for ip in apache_badbot['ip'] -%}
+       Require not ip {{ ip }}
+       {% endfor -%}
+
+       {% endif -%}
+       {% if apache_badbot['host'] is defined -%}
+       # Agressive Hosts
+       {% for host in apache_badbot['host'] -%}
+       Require not host {{ host }}
+       {% endfor -%}
+
+       {% endif -%}
+
+       Require not env bad_bot
+    </RequireAll>
+  {% else -%}
+  Order Allow,Deny
+  Allow from all
+
+  {% if apache_badbot['cyveillance'] is defined and apache_badbot['cyveillance'] -%}
+  # Cyveillance
+  Deny from 38.100.19.8/29
+  Deny from 38.100.21.0/24
+  Deny from 38.100.41.64/26
+  Deny from 38.105.71.0/25
+  Deny from 38.105.83.0/27
+  Deny from 38.112.21.140/30
+  Deny from 38.118.42.32/29
+  Deny from 65.213.208.128/27
+  Deny from 65.222.176.96/27
+  Deny from 65.222.185.72/29
+
+  {% endif %}
+  {% if apache_badbot['ip'] is defined -%}
+  # Agressive IP
+  {% for ip in apache_badbot['ip'] -%}
+  Deny from {{ ip }}
+  {% endfor -%}
+
+  {% endif -%}
+
+  {% if apache_badbot['host'] is defined -%}
+  # Agressive Hosts
+  {% for host in apache_badbot['host'] -%}
+  Deny from {{ host }}
+  {% endfor -%}
+
+  {% endif -%}
+  Deny from env=bad_bot
+  {% endif -%}
+  </Limit>
+</Directory>

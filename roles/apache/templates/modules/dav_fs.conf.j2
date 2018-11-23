@@ -1,0 +1,5 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+DAVLockDB "{{ apache_modules['dav_fs'].dav_lock|default(apache_mod_dav_fs['dav_lock']) }}"

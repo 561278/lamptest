@@ -1,0 +1,178 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+ServerTokens {{ apache_server_tokens }}
+ServerSignature {{ apache_server_signature }}
+
+TraceEnable {{ apache_trace_enable }}
+
+ServerName {{ apache_servername|default(ansible_fqdn) }}
+ServerRoot {{ apache_server_root }}
+PidFile {{ apache_pidfile }}
+Timeout {{ apache_timeout }}
+KeepAlive {{ apache_keepalive }}
+MaxKeepAliveRequests {{ apache_max_keepalive_requests }}
+KeepAliveTimeout {{ apache_keepalive_timeout }}
+LimitRequestFieldSize {{ apache_limit_request_field_size }}
+
+{% if apache_rewrite_lock is defined  -%}
+{% if apache_version.split('.')[1] == '2' -%}
+RewriteLock {{ apache_rewrite_lock }}
+{% else -%}
+Mutex file:{{ apache_rewrite_lock }}
+{% endif -%}
+{% endif -%}
+User {{ apache_user }}
+Group {{ apache_user }}
+
+AccessFileName .htaccess
+<FilesMatch "^\.ht">
+{% if apache_version.split('.')[1] == '4' -%}
+       Require all denied
+{% else -%}
+     Order allow,deny
+     Deny from all
+     Satisfy all
+{% endif -%}
+</FilesMatch>
+
+<Directory />
+     Options {{ apache_root_directory_options|join(' ') }}
+     AllowOverride None
+{% if apache_version.split('.')[1] == '4' -%}
+     Require all denied
+{% else -%}
+     Order allow,deny
+     Deny from all
+     Satisfy all
+{% endif -%}
+</Directory>
+
+{% if apache_default_charset is defined -%}
+AddDefaultCharset {{ apache_default_charset }}
+{% endif -%}
+
+{% if apache_version.split('.')[1] == '2' -%}
+DefaultType {{ apache_default_type }}
+{% endif -%}
+HostnameLookups Off
+LogLevel {{ apache_log_level }}
+EnableSendfile {{ apache_sendfile }}
+{% if apache_allow_encoded_slashes is defined -%}
+AllowEncodedSlashes  {{ apache_allow_encoded_slashes }}
+{% endif %}
+
+Include "{{ apache_mod_enable_dir }}/*.load"
+Include "{{ apache_mod_enable_dir }}/*.conf"
+Include "{{ apache_ports_file }}"
+
+{% if 'combined' in apache_log_formats  %}
+LogFormat {{ apache_default_log_formats['combined']}}
+{% endif %}
+{% if 'common' in apache_log_formats %}
+LogFormat {{ apache_default_log_formats['common']}}
+{% endif %}
+{% if 'referer' in apache_log_formats %}
+LogFormat {{ apache_default_log_formats['referer']}}
+{% endif %}
+{% if 'agent' in apache_log_formats %}
+LogFormat {{ apache_default_log_formats['agent']}}
+{% endif %}
+{% if 'forwarded' in apache_log_formats %}
+LogFormat {{ apache_default_log_formats['forwarded']}}
+{% endif %}
+{% if 'syslog' in apache_log_formats and apache_custom_log_format is not defined %}
+LogFormat {{ apache_default_log_formats['syslog']}}
+{% if apache_version.split('.')[1] == '4' %}
+CustomLog "|{{ apache_syslog['pipe24'] }} -p {{ apache_syslog['priority_access'] }} -t {{ apache_syslog['tag_access'] }}'" syslog
+ErrorLog  "|{{ apache_syslog['pipe24'] }} -p {{ apache_syslog['priority_error'] }} -t {{ apache_syslog['tag_error'] }}'"
+{% else %}
+CustomLog "|{{ apache_syslog['pipe22'] }} -p {{ apache_syslog['priority_access'] }} -t {{ apache_syslog['tag_access'] }}" syslog
+ErrorLog  "|{{ apache_syslog['pipe22'] }} -p {{ apache_syslog['priority_error'] }} -t {{ apache_syslog['tag_error'] }}"
+{% endif %}
+{% elif apache_custom_log_format is defined %}
+LogFormat {{ apache_custom_log_format['logformat'] }}
+CustomLog "{{ apache_custom_log_format['customlog'] }}" {{ apache_custom_log_format['expr']|default('combined') }}
+ErrorLog "{{ apache_custom_log_format['errorlog'] }}"
+{% else %}
+ErrorLog {{ apache_log_root }}/error.log
+{% endif %}
+
+{% if apache_version.split('.')[1] == '4' %}
+IncludeOptional "{{ apache_confd_dir }}/*.conf"
+IncludeOptional "{{ apache_conf_enable_dir }}/{{ apache_vhost_include_pattern }}"
+{% else %}
+Include "{{ apache_confd_dir }}/*.conf"
+{% endif %}
+{% if apache_vhost_enable_dir is defined and apache_vhost_enable_dir != apache_confd_dir %}
+{% if apache_version.split('.')[1] == '4' -%}
+IncludeOptional "{{ apache_vhost_enable_dir }}/{{ apache_vhost_include_pattern }}"
+{% else %}
+Include "{{ apache_vhost_enable_dir }}/{{ apache_vhost_include_pattern }}"
+{% endif %}
+{% endif %}
+
+{% if apache_include is defined and apache_include|length > 0 %}
+## Custom include directories.
+{% for include in apache_include %}
+{% if include.path not in apache_embeded_include %}
+{% if apache_version.split('.')[1] == '4' %}
+IncludeOptional "{{ include.path }}/{{ apache_vhost_include_pattern }}"
+{% else %}
+Include "{{ include.path }}/{{ apache_vhost_include_pattern }}"
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if apache_setid %}
+## Settings debugging information in headers.
+SetEnvIf Remote_Addr 127.0.0.1 DEBUG
+{% if apache_granted_ip is defined %}
+{% for ip in apache_granted_ip %}
+SetEnvIf Remote_Addr {{ ip }} DEBUG
+{% endfor %}
+{% endif %}
+<IfModule mod_headers.c>
+     Header set X-Apache-Server-ID "{{ apache_server_id|default(inventory_hostname) }}" env=DEBUG
+</IfModule>
+{% endif %}
+
+{% if apache_error_documents is defined -%}
+# /usr/share/apache2/error on debian
+Alias /error/ "{{ apache_error_documents_path }}/"
+
+<Directory "{{ apache_error_documents_path }}">
+  AllowOverride None
+  Options IncludesNoExec
+  AddOutputFilter Includes html
+  AddHandler type-map var
+{% if apache_version.split('.')[1] == '4' -%}
+  Require all granted
+{% else -%}
+  Order allow,deny
+  Allow from all
+{% endif -%}
+  LanguagePriority en cs de es fr it nl sv pt-br ro
+  ForceLanguagePriority Prefer Fallback
+</Directory>
+
+ErrorDocument 400 /error/HTTP_BAD_REQUEST.html.var
+ErrorDocument 401 /error/HTTP_UNAUTHORIZED.html.var
+ErrorDocument 403 /error/HTTP_FORBIDDEN.html.var
+ErrorDocument 404 /error/HTTP_NOT_FOUND.html.var
+ErrorDocument 405 /error/HTTP_METHOD_NOT_ALLOWED.html.var
+ErrorDocument 408 /error/HTTP_REQUEST_TIME_OUT.html.var
+ErrorDocument 410 /error/HTTP_GONE.html.var
+ErrorDocument 411 /error/HTTP_LENGTH_REQUIRED.html.var
+ErrorDocument 412 /error/HTTP_PRECONDITION_FAILED.html.var
+ErrorDocument 413 /error/HTTP_REQUEST_ENTITY_TOO_LARGE.html.var
+ErrorDocument 414 /error/HTTP_REQUEST_URI_TOO_LARGE.html.var
+ErrorDocument 415 /error/HTTP_UNSUPPORTED_MEDIA_TYPE.html.var
+ErrorDocument 500 /error/HTTP_INTERNAL_SERVER_ERROR.html.var
+ErrorDocument 501 /error/HTTP_NOT_IMPLEMENTED.html.var
+ErrorDocument 502 /error/HTTP_BAD_GATEWAY.html.var
+ErrorDocument 503 /error/HTTP_SERVICE_UNAVAILABLE.html.var
+ErrorDocument 506 /error/HTTP_VARIANT_ALSO_VARIES.html.var
+{% endif -%}

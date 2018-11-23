@@ -1,0 +1,231 @@
+---
+- hosts: localhost
+  become: false
+  roles:
+    - awh-apache
+  pre_tasks:
+    - name: create empty dirs
+      file:
+        name: '{{ item }}'
+        state: directory
+        mode: '0777'
+      with_items:
+        - /opt/certs
+        - /opt/fastcgi
+    - name: create empty files
+      copy:
+        dest: '{{ item }}'
+        content: ''
+      with_items:
+        - /opt/empty.file
+        - /opt/empty.db
+
+    - name: create dummy certs
+      copy:
+        dest: '{{ item }}'
+        src: ./test/integration//data/ssl/www.helldorado.info.cert
+      with_items:
+        - /opt/certs/toto.crt
+
+    - name: create dummy key
+      copy:
+        dest: '{{ item }}'
+        src: ./test/integration/data/ssl/www.helldorado.info.key
+      with_items:
+        - /opt/certs/toto.key
+
+    - name: add disk_cache debian wheezy
+      set_fact:
+        apache_modules: "{{ apache_modules | combine( { 'disk_cache': { 'root': '/var/run/apache_disk_cache' } } ) }}"
+      when: ansible_distribution == "Debian" and ansible_distribution_release == "wheezy"
+    - name: add cache_disk for others
+      set_fact:
+        apache_modules: "{{ apache_modules | combine( { 'cache_disk': { 'root': '/var/run/apache_disk_cache' } } ) }}"
+      when: ansible_distribution != "Debian" or ansible_distribution_release != "wheezy"
+    - name: add remoteip for jessie
+      set_fact:
+        apache_modules: "{{ apache_modules | combine( { 'remoteip': { 'header': 'FORWARD', 'proxy_ips':[ '10.0.0.1', '10.0.0.2'], 'proxies_header': 'PROXY', 'trusted_proxy_ip': ['192.168.0.20', '192.168.0.30'] } } ) }}"
+      when: ansible_distribution != "Debian" or ansible_distribution_major_version|int >= 8
+  vars:
+    apache_modules:
+      auth_cas:
+        login_url: https://login.example.org/cas/login
+        validate_url: https://login.example.org/cas/validate
+        version: 1
+        debug: 'On'
+        certificate_path: /opt/certs
+        proxy_validate_url: http://unimplemented.com/no
+        validate_depth: 3
+        root_proxied_as: http://internal.example.com
+        cookie_entropy: 16
+        timeout: 15
+        idle_timeout: 120
+        cache_clean_interval: 2400
+        cookie_domain: toto.foo
+        cookie_http_only: 'On'
+      authnz_ldap:
+        verify_server_cert: true
+      cache:
+      cgid:
+        sock_path: /opt/cgid.sock
+      dav:
+      dav_fs:
+        dav_lock: /opt/dav.lock
+      deflate:
+        type:
+          - archive/zip
+        notes:
+          - ratio
+      dir:
+        indexes:
+          - bootstrap.php
+          - start.py
+          - entrypoint.rb
+      expires:
+        state: 'Off'
+        default: 'modification plus 24 seconds'
+        by_type:
+          - 'text/plain "modification plus 1 week"'
+          - 'application/json "access plus 30 seconds"'
+      ext_filter:
+        slowdown   : 'mode=output cmd=/bin/cat preservescontentlength'
+        tracebefore: 'cmd="/bin/tracefilter.pl /tmp/tracebefore" EnableEnv=trace_this_client'
+      fastcgi:
+        lib_path: /opt/fastcgi
+      fcgid:
+        FcgidSpawnScore: 3
+      geoip:
+        enabled: 'Off'
+        db_file:
+          - /opt/empty.file
+          - /opt/empty.db
+        db_flag: MemoryCache
+        output: Notes
+        enable_utf8: 'On'
+        scan_proxy_headers: 'On'
+        scan_proxy_header_field: 'HTTP_CLT_ADDR'
+        use_last_xforwarededfor_ip: 'On'
+      info:
+        path: /info
+        allow_from:
+          - 10.0.0.1
+          - 10.0.1.1
+      ldap:
+        trusted_global_cert_type: KEY_BASE64
+        trusted_global_cert_file: /opt/certs/toto.key
+        shared_cache_size: 4096
+        cache_entries: 512
+        cache_ttl: 20
+        opcache_entries: 1024
+        opcache_ttl: 40
+      mime:
+        types_config: /opt/empty.file
+      mime_magic:
+        file: /opt/empty.file
+      negotiation:
+        language_priority:
+          - fr
+          - en
+          - cz
+        force_language_priority:
+          - Fallback
+      pagespeed:
+        inherit_vhost_config: 'off'
+        filter_xhtml: 'yes'
+        cache_path: '/opt/certs'
+        log_dir: '/opt'
+        rewrite_level: 'PassThrough'
+        rewrite_deadline_per_flush_ms: 20
+        file_cache_size_kb: 204800
+        file_cache_clean_interval_ms: 3600
+        lru_cache_per_process: 2048
+        lru_cache_byte_limit: 4096
+        css_flatten_max_bytes: 1024
+        css_inline_max_bytes: 512
+        css_image_inline_max_bytes: 4096
+        image_inline_max_bytes: 4096
+        js_inline_max_bytes: 1024
+        css_outline_min_bytes: 4000
+        js_outline_min_bytes: 4010
+        inode_limit: 700000
+        image_max_rewrites_at_once: 7
+        num_rewrite_threads: 5
+        num_expensive_rewrite_threads: 3
+        collect_statistics: 'off'
+        statistics_logging: 'off'
+        message_buffer_size: 4000
+        allow_view_stats:
+          - '10.0.1.1'
+          - '10.0.1.2'
+        allow_pagespeed_console:
+          - '10.0.2.1'
+          - '10.0.2.2'
+        allow_pagespeed_message:
+          - '10.0.3.1'
+          - '10.0.3.2'
+        additional_domains: 'toto.foo'
+      passenger:
+        root: /opt
+        ruby: /opt/empty.file
+        default_ruby: /usr/local/bin/ruby
+        high_performance: 'on'
+        max_pool_size: 20
+        min_instances: 2
+        pool_idle_time: 200
+        max_request_queue_size: 10
+        max_requests: 40
+        spawn_method: smart
+        stat_throttle_rate: 3
+        rack_autodetect: 'off'
+        rails_autodetect: 'off'
+        use_global_queue: 'on'
+        app_env: testing
+        log_file: /var/log/passenger
+      proxy:
+        requests: 'On'
+        allow_from:
+          - 127.0.0.1
+          - 10.0.0.1
+          - 10.0.0.2
+      rpaf:
+        sethostname: no
+        proxy_ips:
+          - 10.0.0.1
+          - 10.0.0.2
+        header: FORWARDED
+      socache_shmcb:
+      suexec:
+      ssl:
+        random_seed_bytes: 1024
+        pass_phrase_dialog: "|/bin/false"
+        session_cache: /tmp/totosession
+        session_cache_timeout: 450
+        cryptodevice: dynamic
+        honorcipherorder: 'Off'
+        cipher: DEFAULT
+        protocol:
+          - all
+          - -SSLv3
+          - -TLSv1
+        options:
+          - -StrictRequire
+          - -OptRenegotiate
+        openssl_conf_cmd: ECDHParameters brainpoolP256r1
+        mutex: pthread
+        compression: 'On'
+      status:
+        extended_status: 'Off'
+        path: /status
+        allow_from:
+          - 127.0.0.1
+          - ::1
+          - 10.0.0.1
+      userdir:
+        home: /var
+        dir: html
+        options:
+        - -Indexes
+      wsgi:
+        socket_prefix: py
+        python_home: /opt
+        python_path: /usr/bin/python

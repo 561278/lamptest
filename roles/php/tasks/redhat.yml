@@ -1,0 +1,98 @@
+---
+
+- name: Add PHP repository
+  yum:
+    name        : "{{ item.key }}"
+    state       : present
+  with_dict: '{{php_repo}}'
+  when: ((item.value.url is defined) and item.value.distribution is not defined)
+
+- name: Import GPG key.
+  rpm_key:
+    key: '{{ item.value.key|default(omit) }}'
+    state: present
+  with_dict: '{{php_repo}}'
+  when: ((item.value.key is defined) and item.value.distribution is not defined)
+
+- name: Add Remi PHP repository
+  yum:
+    name    : '{{ php_remi.url }}'
+    state   : present
+  when: (php_repo|length <= 0)
+
+- name: Import REMI GPG key.
+  rpm_key:
+    key: '{{ php_remi.key|default(omit) }}'
+    state: present
+  when: (php_repo|length <= 0)
+
+
+- name: 'Purge old install'
+  yum:
+    name        : '{{item}}'
+    state       : 'removed'
+  when : php_reinstall is defined
+  with_items:
+    - 'php*'
+    - 'libapache2-mod-php*'
+
+- name: Install php-fpm
+  yum:
+    name : '{{ php_prefix }}-fpm'
+    state: '{{ php_pkg_state|default(omit)}}'
+    enablerepo : '{% if php_repo|length <= 0 %}{{ php_remi.enablerepo }}{% else %}{{ php_enablerepo|default(omit) }}{% endif %}'
+  when: php_sapi == 'fpm'
+  notify:
+    - php-fpm-start
+    - php-apache-start
+    - php-fpm-reload
+    - php-apache-reload
+
+- name: Install php modules
+  yum:
+    name : '{{ php_prefix }}-{{ item }}'
+    state: '{{ php_pkg_state|default(omit)}}' 
+    enablerepo : '{% if php_repo|length <= 0 %}{{ php_remi.enablerepo }}{% else %}{{ php_enablerepo|default(omit) }}{% endif %}'
+  with_flattened:
+   - "{% if php_version_major|int == 5 and php_version_minor|int < 5%}{{ php_modules|union(['cli']) }}{% else %}{{ php_modules|union(['cli','opcache']) }}{% endif %}"
+  notify     :
+    - php-fpm-start
+    - php-apache-start
+    - php-fpm-reload
+    - php-apache-reload
+
+- name: Install php modules with non-standard prefix
+  yum:
+    name : '{{ item }}'
+    state: '{{ php_pkg_state|default(omit)}}'
+    enablerepo : '{% if php_repo|length <= 0 %}{{ php_remi.enablerepo }}{% else %}{{ php_enablerepo|default(omit) }}{% endif %}'
+  with_flattened:
+   - '{{php_modules_extras|default([])}}'
+  notify     :
+    - php-fpm-start
+    - php-apache-start
+    - php-fpm-reload
+    - php-apache-reload
+
+- name: Check the installed version of PHP.
+  shell: '$(which php) -r "echo PHP_VERSION;"'
+  register: php_version
+  changed_when: false
+  always_run: yes
+  tags:
+    - php
+    - php_install
+    - php_configure
+
+- name: Set configuration files for sysconfig
+  template:
+    src: php-sysconfig.j2
+    dest: /etc/sysconfig/php-fpm
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Clean default php conf
+  file:
+    name: '{{php_conf_dir}}/php.ini'
+    state: absent

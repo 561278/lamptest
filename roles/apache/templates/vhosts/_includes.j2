@@ -1,0 +1,9 @@
+{% if apache_version.split('.')[1] == '4' %}
+{% for inc in item.value.includes %}
+IncludeOptional "{{ inc }}"
+{% endfor %}
+{% else %}
+{% for inc in item.value.includes %}
+Include "{{ inc }}"
+{% endfor %}
+{% endif %}

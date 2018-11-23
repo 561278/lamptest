@@ -1,0 +1,41 @@
+{% for ban_line in apache_ansible_managed %}
+{{ ban_line }}
+{% endfor %}
+
+{% if apache_manage_security -%}
+{% set scm = ['svn', 'git', 'bzr'] %}
+{% if apache_block['scm'] is defined %}
+{% set scm  = apache_block['scm'] + scm %}
+{% endif %}
+{% set dot = ['bak', 'config', 'sql', 'ini', 'log', 'sh', 'inc', 'swp'] %}
+{% if apache_block['dot'] is defined %}
+{% set dot  = apache_block['dot'] + dot %}
+{% endif %}
+{% set scm = scm|unique %}
+{% set dot = dot|unique %}
+## Block access to SCM directories.
+<DirectoryMatch ".*\.({{ scm|join('|') }})/.*">
+{% if apache_version.split('.')[1] == '4' %}
+    Require all denied
+{% else -%}
+    Deny From All
+{% endif %}
+    # Don't add here, extensions like .sql .bak .ini .log ... Instead use apache_block['dot']
+</DirectoryMatch>
+
+## Block access to backup and source files
+<FilesMatch "(\.({{ dot|join('|') }})|~)$">
+{% if apache_version.split('.')[1] == '4' %}
+    Require all denied
+{% else -%}
+    Deny From All
+{% endif %}
+    # Don't add here, scm like .git .svn .bzr ... Instead use apache_block['scm']
+</FilesMatch>
+{% endif %}
+
+{% if apache_httpoxy_mitigation %}
+<IfModule mod_headers.c>
+   RequestHeader unset Proxy
+</IfModule>
+{% endif %}

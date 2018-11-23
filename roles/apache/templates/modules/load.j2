@@ -1,0 +1,20 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+{% set lib = apache_lib_path +  '/' + 'mod' + item.key + '.so' %}
+{% set module = item.key + '_module' %}
+
+{% if item.value.lib_path is defined -%}
+   {% set lib = item.value.lib_path -%}
+{% endif -%}
+
+{% if item.value.module_name is defined -%}
+   {% set module = item.value.module_name -%}
+{% endif -%}
+
+{% for loadfile in item.value.loadfiles -%}
+LoadFile {{ loadfile }}
+{% endif -%}
+
+LoadModule  {{ module }} {{ lib }}

@@ -1,0 +1,9 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+{% if apache_modules['authnz_ldap'].verify_server_cert is defined and apache_modules['authnz_ldap'].verify_server_cert -%}
+LDAPVerifyServerCert On
+{% else -%}
+LDAPVerifyServerCert Off
+{% endif -%}

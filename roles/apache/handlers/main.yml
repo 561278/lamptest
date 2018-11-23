@@ -1,0 +1,7 @@
+---
+
+- name: restart apache
+  shell: /usr/sbin/apachectl -t && /usr/sbin/apachectl -k restart && sleep 1
+
+- name: reload apache
+  shell: /usr/sbin/apachectl -t && /usr/sbin/apachectl -k graceful && sleep 1

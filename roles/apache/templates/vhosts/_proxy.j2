@@ -1,0 +1,79 @@
+{% if item.value.proxy_preserve_host is defined and item.value.proxy_preserve_host %}
+ProxyPreserveHost On
+{% else %}
+ProxyPreserveHost Off
+{% endif %}
+{% if item.value.proxy_error_override is defined and item.value.proxy_error_override %}
+ProxyErrorOverride On
+{% endif %}
+{% if item.value.proxy_pass is defined %}
+{% for proxy in item.value.proxy_pass %}
+ProxyPass {{ proxy['path'] }} {{ proxy['url'] }}{% if proxy['params'] is defined %}{% for key in proxy['params'] %} {{ key }}={{ proxy['params'][key] }}{% endfor %}{% endif %} {% if proxy['keywords'] is defined %} {{ proxy['keywords']|join(' ') }} {% endif %}
+
+{% if proxy['reverse_cookies'] is defined %}
+{% for reverse_cookies in proxy['reverse_cookies'] %}
+{% if reverse_cookies['path'] is defined %}
+ProxyPassReverseCookiePath {{ reverse_cookies['path'] }} {{ reverse_cookies['url'] }}
+{% endif %}
+{% if reverse_cookies['domain'] is defined %}
+ProxyPassReverseCookieDomain {{ reverse_cookies['domain'] }} {{ reverse_cookies['url'] }}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if proxy['reverse_urls'] is not defined %}
+ProxyPassReverse {{ proxy['path'] }} {{ proxy['url'] }}
+{% else %}
+{% for reverse_url in proxy['reverse_urls'] %}
+ProxyPassReverse {{ proxy['path'] }} {{ reverse_url }}
+{% endfor %}
+{% endif %}
+{% if proxy['setenv'] is defined %}
+{% for setenv_var in proxy['setenv'] %}
+SetEnv {{ setenv_var }}
+{% endfor %}
+{% endif %}
+{% if proxy['options'] is defined %}
+{% for key in proxy['options'] %}
+{{ key }} {{ proxy['options'][key] }}
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+{% endif %}
+{% if item.value.proxy_pass_match is defined %}
+{% for proxy in item.value.proxy_pass_match %}
+ProxyPassMatch {{ proxy['path'] }} {{ proxy['url'] }}{% if proxy['params'] is defined %}{% for key in proxy['params'] %} {{ key }}={{ proxy['params'][key] }}{% endfor %}{% endif %} {% if proxy['keywords'] is defined %}{{ proxy['keywords']|join(' ') }}{% endif %}
+
+{% if proxy['reverse_urls'] is not defined %}
+ProxyPassReverse {{ proxy['path'] }} {{ proxy['url'] }}
+{% else %}
+{% for reverse_url in proxy['reverse_urls'] %}
+ProxyPassReverse {{ proxy['path'] }} {{ reverse_url }}
+{% endfor %}
+{% endif %}
+{% if proxy['setenv'] is defined %}
+{% for setenv_var in proxy['setenv'] %}
+SetEnv {{ setenv_var }}
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+{% endif %}
+{% if item.value.proxy_dest is defined %}
+{% if item.value.proxy_no_uris is defined %}
+{% for uri in item.value.proxy_no_uris  %}
+ProxyPass        {{ uri }} !
+{% endfor %}
+{% endif %}
+ProxyPass        / {{ item.value.proxy_dest }}/
+ProxyPassReverse / {{ item.value.proxy_dest }}/
+{% endif %}
+{% if item.value.proxy_dest_match is defined %}
+{% if item.value.proxy_no_uris_match is defined %}
+{% for uri in item.value.proxy_no_uris_match %}
+ProxyPassMatch   {{ uri }} !
+{% endfor %}
+{% endif %}
+ProxyPassMatch   / {{ item.value.proxy_dest_match }}/
+ProxyPassReverse / {{ item.value.proxy_dest_reverse_match }}/
+{% endif %}

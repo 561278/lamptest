@@ -1,0 +1,1 @@
+../../specs/check_fpm_spec.rb

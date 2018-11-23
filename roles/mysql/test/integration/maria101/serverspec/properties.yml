@@ -1,0 +1,8 @@
+---
+mysql_provider: 'mariadb'
+mysql_version: '10.1'
+mysql_packages:
+  - 'mariadb-server'
+  - 'mariadb-client'
+  - 'mysqltuner'
+

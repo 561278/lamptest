@@ -1,0 +1,71 @@
+---
+- name: 'Initialize'
+  include: initialize.yml
+  tags:
+    - mysql
+    - mysql_install
+    - mysql_config
+    - mysql_replication
+    - mysql_cluster
+
+- name: 'Asserts'
+  include: asserts.yml
+  tags:
+    - mysql
+    - mysql_install
+    - mysql_config
+    - mysql_replication
+    - mysql_cluster
+
+- name: 'Select variables provider'
+  include_vars: "{{ mysql_provider|string }}.yml"
+  tags:
+    - mysql
+    - mysql_install
+    - mysql_config
+    - mysql_replication
+    - mysql_cluster
+
+- name: 'Select specific repository'
+  include_vars: "{{ item }}"
+  with_first_found:
+   - "repository/{{ mysql_provider|string }}-{{ ansible_distribution_release }}-{{ mysql_version }}.yml"
+   - "repository/{{ mysql_provider|string }}-{{ ansible_distribution_release }}.yml"
+   - "repository/{{ mysql_provider|string }}.yml"
+  when: mysql_custom_repo is undefined
+  tags:
+    - mysql
+    - mysql_install
+    - mysql_config
+    - mysql_replication
+    - mysql_cluster
+
+- name: 'Install packages'
+  include: install.yml
+  when: mysql_installation or mysql_reinstall
+  tags:
+    - mysql
+    - mysql_install
+
+- name: 'Configure Server'
+  include: config.yml
+  when: mysql_configuration or mysql_installation or mysql_reinstall
+  tags:
+    - mysql
+    - mysql_config
+
+- name: 'Configure Replication'
+  include: replication.yml
+  when: mysql_replication
+  tags:
+    - mysql
+    - mysql_config
+    - mysql_replication
+
+- name: 'Configure Cluster'
+  include: cluster/cluster.yml
+  when: mysql_cluster_enabled and (mysql_configuration or mysql_installation or mysql_reinstall)
+  tags:
+    - mysql
+    - mysql_config
+    - mysql_cluster

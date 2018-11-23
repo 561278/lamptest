@@ -1,0 +1,4 @@
+---
+mysql_version: '5.7'
+mysql_provider: 'percona'
+mysql_bind_address: '127.0.0.1'

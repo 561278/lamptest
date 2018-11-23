@@ -1,0 +1,184 @@
+---
+- name: "Ensure service is enabled"
+  service:
+    name: mysql
+    enabled: yes
+  when: ansible_service_mgr|default() != "systemd"
+
+- name: "Ensure service is enabled (systemd)"
+  systemd:
+    name: mysql
+    enabled: yes
+    daemon_reload: yes
+    masked: no
+  ignore_errors: yes
+  when: ansible_service_mgr|default() == "systemd"
+
+- name: Fetch list of file in config dir
+  shell: ls -1 "{{ mysql_conf_dir }}"
+  register: mysql_confdir_contents
+  changed_when: False
+  when: mysql_purge
+
+- name: Purge unamaged file in config dir
+  file:
+    path: "{{ mysql_conf_dir }}/{{ item }}"
+    state: absent
+  with_items: "{{ mysql_confdir_contents.stdout_lines|default([]) }}"
+  when:
+    - mysql_purge
+    - mysql_conf_dir + '/' + item not in mysql_managed_conf
+    - mysql_conf_dir + '/' + item not in mysql_include
+
+- name: "Ensure custom included dir exist "
+  file:
+    path : "{{ item.dest|dirname if item.dest|dirname|first == '/' else mysql_conf_dir + '/' + item.dest|dirname }}"
+    state: directory
+    owner: root
+    group: root
+  with_items: "{{ mysql_include }}"
+  when:
+    - mysql_include is defined
+    - mysql_include|length > 0
+    - item.dest|dirname not in mysql_managed_conf or mysql_conf_dir + '/' + item.dest|dirname not in mysql_managed_conf
+
+- name: "Create custom config"
+  template:
+    src : "{{ item.src }}"
+    dest: "{{ item.dest if item.dest|first == '/' else mysql_conf_dir + '/' + item.dest }}"
+    owner: root
+    group: root
+    mode: 0444
+  with_items: "{{ mysql_include }}"
+  when:
+    - mysql_include is defined
+    - mysql_include|length > 0
+    - item.dest not in mysql_managed_conf or mysql_conf_dir + '/' + item.dest not in mysql_managed_conf
+  notify:
+    - mysql-restart
+
+- name: Copy my.cnf.j2 in /etc/mysql/my.cnf
+  template:
+    src: "{{ mysql_custom_template|default('my.cnf.j2') }}"
+    dest: /etc/mysql/my.cnf
+    owner: root
+    group: root
+    mode: '0444'
+  notify:
+    - mysql-restart
+
+- name: Ensure for first pushing ib_logfile[0|1] is dropped
+  file:
+    path: "{{ mysql_datadir }}/{{ item }}"
+    state: absent
+  with_items:
+    - ib_logfile0
+    - ib_logfile1
+  notify:
+    - mysql-restart
+  when: 
+    - mysql_has_restart
+
+- name: Copy MariaDB configuration file.
+  template:
+    src: conf.d/mariadb.cnf.j2
+    dest: /etc/mysql/conf.d/mariadb.cnf
+    owner: root
+    group: root
+    mode: 0644
+  when: mysql_provider|string == 'mariadb'
+  notify:
+    - mysql-restart
+
+- name: Ensure MySQL is started
+  service:
+    name: mysql
+    state: started
+
+- name: Wait service mysql on port 3306
+  wait_for:
+    port: "{{ mysql_port }}"
+    delay: 5
+    timeout: 60
+
+- name: Copy .my.cnf in /root/
+  template:
+    src: root_my.cnf.j2
+    dest: /root/.my.cnf
+    owner: root
+    group: root
+    mode: 0400
+
+- name: Update root password for all local root accounts.
+  mysql_user:
+    name: 'root'
+    host: '{{ item|quote }}'
+    priv: '*.*:ALL,GRANT'
+    password: '{{ mysql_root_password }}'
+    update_password: always
+    check_implicit_admin: yes
+    append_privs: yes
+    state: present
+  with_items: "{{ mysql_local_host }}"
+  loop_control:
+    label: "{{ 'root' + '@' + item }}"
+
+- name: Get list of hosts with anonymous user.
+  command: mysql -NBe 'SELECT Host FROM mysql.user WHERE User=""'
+  register: mysql_anonymous_hosts
+  changed_when: false
+  check_mode: no
+
+- name: Remove all anonymous users
+  mysql_user:
+    name: ''
+    host: "{{ item }}"
+    state: absent
+  with_items: "{{ mysql_anonymous_hosts.stdout_lines|default([]) }}"
+  loop_control:
+    label: "{{ 'From Host => ' + item }}"
+
+- name: Get list of users without password.
+  command: mysql -NBe "SELECT User,Host FROM mysql.user WHERE {{ 'Password' if not (mysql_provider|string in ['oracle','percona'] and mysql_version|string == '5.7') else 'authentication_string' }}=''"
+  register: mysql_users_without_password
+  changed_when: false
+  check_mode: no
+
+- name: Remove all users without password
+  mysql_user:
+    name: "{{ item.split()[0] }}"
+    host: "{{ item.split()[1]|quote }}"
+    state: absent
+  with_items: "{{ mysql_users_without_password.stdout_lines|default([]) }}"
+  loop_control:
+    label: "{{ item.split()[0]|quote + '@' + item.split()[1]|quote }}"
+
+- name: Get root login with remote access
+  command: mysql -NBe "SELECT Host FROM mysql.user WHERE User='root' AND Host NOT IN ('{{ mysql_local_host|join("', '") }}')"
+  register: mysql_root_remotely
+  changed_when: false
+  check_mode: no
+
+- name: Disallow root login from remote host
+  mysql_user:
+    name: "root"
+    host: "{{ item }}"
+    state: absent
+  with_items: "{{ mysql_root_remotely.stdout_lines|default([]) }}"
+  loop_control:
+    label: "{{ 'root' + '@' + item|quote }}"
+
+- name: Remove tests databases
+  mysql_db:
+    name: test
+    state: absent
+
+- name: Install User Defined Functions from Percona Toolkit.
+  command: mysql --defaults-file=/root/.my.cnf -Bse "CREATE FUNCTION fnv1a_64 RETURNS INTEGER SONAME 'libfnv1a_udf.so'; CREATE FUNCTION fnv_64 RETURNS INTEGER SONAME 'libfnv_udf.so'; CREATE FUNCTION murmur_hash RETURNS INTEGER SONAME 'libmurmur_udf.so'"
+  register: command_result
+  failed_when: "'FAILED' in command_result.stderr"
+  changed_when: "'already exists' not in command_result.stderr"
+  when: mysql_provider|string == 'percona'
+
+- name: Ensure Handlers fulshed
+  meta: flush_handlers

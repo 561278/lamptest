@@ -1,0 +1,19 @@
+{% if item.value.directory['index'] is defined %}
+## Index
+DirectoryIndex {{ item.value.directory['index']|join(' ') }}
+{% endif %}
+
+{% if apache_version.split('.')[1] != '2' and item.value.directory['index_redirect'] is defined %}
+## Index Redirect
+DirectoryIndexRedirect {{ item.value.directory['index_redirect'] }}
+{% endif %}
+
+{% if apache_version.split('.')[1] != '2' and item.value.directory['check_handler'] is defined %}
+## Check Handler
+DirectoryCheckHandler {{ item.value.directory['check_handler'] }}
+{% endif %}
+
+{% if item.value.directory['slash'] is defined %}
+## Check Handler
+DirectorySlash {{ item.value.directory['slash'] }}
+{% endif %}

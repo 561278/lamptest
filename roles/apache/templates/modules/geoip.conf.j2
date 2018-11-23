@@ -1,0 +1,24 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+GeoIPEnable {{ apache_modules['geoip'].enabled|default('On') }}
+
+{% if apache_modules['geoip'].db_file is defined -%}
+      {% for db in apache_modules['geoip'].db_file -%}
+GeoIPDBFile {{ db }} {{ apache_modules['geoip'].db_flag|default('Standard') }}
+      {% endfor -%}
+{% endif -%}
+GeoIPOutput {{ apache_modules['geoip'].output|default('All') }}
+{% if apache_modules['geoip'].enable_utf8 is defined -%}
+GeoIPEnableUTF8 {{ apache_modules['geoip'].enable_utf8 }}
+{% endif -%}
+{% if apache_modules['geoip'].scan_proxy_headers is defined -%}
+GeoIPScanProxyHeaders {{ apache_modules['geoip'].scan_proxy_headers }}
+{% endif -%}
+{% if apache_modules['geoip'].scan_proxy_header_field is defined -%}
+#GeoIPScanProxyHeaderField {{ apache_modules['geoip'].scan_proxy_header_field }}
+{% endif -%}
+{% if apache_modules['geoip'].use_last_xforwarededfor_ip is defined -%}
+GeoIPUseLastXForwardedForIP {{ apache_modules['geoip'].use_last_xforwarededfor_ip }}
+{% endif -%}

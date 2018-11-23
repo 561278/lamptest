@@ -1,0 +1,47 @@
+---
+
+- name: install apache MPM or apache mpm bundle
+  apt:
+    name            : "{{ apache_mpm_prefix + apache_mpm if ansible_distribution != 'Debian' or ansible_distribution_major_version|int <= 8 else apache_daemon }}"
+    state           : present
+
+- name: install apache python dependancies
+  apt:
+    name            : python-passlib
+    state           : present
+
+- name: add mpm module if not included
+  set_fact:
+    apache_modules: "{{ apache_modules | combine( { apache_mpm: {} } ) }}"
+  when: apache_mpm not in apache_modules.keys()
+
+- name: Check if pagespeed is already installed 1/2
+  stat:
+    path: /etc/apache2/mods-available/pagespeed.load
+  register: apache_pagespeed_lib
+
+- name: Check if pagespeed is already installed 2/2
+  set_fact:
+    apache_pagespeed_install: true
+  when: "'pagespeed' in apache_modules and not apache_pagespeed_lib.stat.exists"
+
+- name: download pagespeed package
+  get_url:
+    url: 'http://www.modpagespeed.com/release_archive/1.9.32.4/mod-pagespeed-stable_1.9.32.4-r7251_i386.deb'
+    dest: '/var/lib/mod_pagespeed.deb'
+    validate_certs: yes
+  when: "apache_pagespeed_install is defined and ansible_architecture != 'x86_64'"
+
+- name: download pagespeed package
+  get_url:
+    url: 'http://www.modpagespeed.com/release_archive/1.9.32.4/mod-pagespeed-stable_1.9.32.4-r7251_amd64.deb'
+    dest: '/var/lib/mod_pagespeed.deb'
+    validate_certs: yes
+  when: "apache_pagespeed_install is defined and ansible_architecture == 'x86_64'"
+
+- name: install pagespeed module
+  apt:
+    deb: '/var/lib/mod_pagespeed.deb'
+    state: present
+  when: "apache_pagespeed_install is defined"
+  ignore_errors: yes

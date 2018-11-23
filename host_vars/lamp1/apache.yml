@@ -1,0 +1,53 @@
+apache_mpm: 'event'
+apache_log_formats: 'syslog'
+
+apache_bind:
+  - '*:80'
+  - '*:443'
+
+apache_keepalive: 'On'
+apache_max_keepalive_requests: '150'
+apache_modules:
+  event:
+    serverlimit            : '25'
+    startservers           : '150'
+    maxrequestevents       : '250'
+    threadsperchild        : '25'
+
+
+apache_vhosts:
+
+  '000-default':
+    proxy_fcgi:
+      socket: '/var/run/php-www.sock'
+    documentroot:
+      path : '/var/www/default'
+      user : 'www-data'
+      group: 'www-data'
+      data:
+        provider: content
+        dest: index.php
+        content : |
+          <?php
+            echo gethostname();
+          ?>
+
+  'lamptest.fr':
+    serveraliases:
+      - 'www.lamptest.fr'
+    proxy_fcgi:
+      socket: '/var/run/php-lamptest.sock'
+    documentroot:
+      path : '/var/www/lamptest.fr'
+      user : 'www-data'
+      group: 'www-data'
+    directories:
+      - path: '/var/www/lamptest.fr'
+        allowoverride:
+          - 'All'
+        options:
+          - '-Indexes'
+          - '+FollowSymLinks'
+          - '+MultiViews'
+
+  

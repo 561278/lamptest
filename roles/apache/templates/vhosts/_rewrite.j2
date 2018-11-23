@@ -1,0 +1,24 @@
+RewriteEngine On
+{% if item.value.rewrite_options is defined %}
+RewriteOptions {{ item.value.rewrite_options }}
+{% endif %}
+
+{% for rewrite in item.value.rewrites %}
+{% if rewrite['comment'] is defined %}
+#{{ rewrite['comment'] }}
+{% endif %}
+{% if rewrite['cond'] is defined %}
+{% for condition in rewrite['cond'] %}
+RewriteCond {{ condition }}
+{% endfor %}
+{% endif %}
+{% if rewrite['map'] is defined %}
+{% for map in rewrite['map'] %}
+RewriteMap {{ map }}
+{% endfor %}
+{% endif %}
+{% for rule in rewrite['rule'] %}
+RewriteRule {{ rule }}
+{% endfor %}
+
+{% endfor %}

@@ -1,0 +1,20 @@
+---
+- hosts: all
+
+  roles:
+   - { role: awh-mysql,     tags: ["mysql"] }
+
+  vars:
+    mysql_bind_address: 0.0.0.0
+    mysql_root_password: 'awhsecret'
+    #mysql_custom_template: data/mysql/my.cnf.j2
+    mysql_localinfile: '1'
+    mysql_include:
+      - src: test/datas/mysql/security.cnf.j2
+        dest: awh.d/security.cnf
+      - src: test/datas/mysql/security.cnf.j2
+        dest: conf.d/security.cnf
+      - src: test/datas/mysql/go-play-elsewhere.cnf.j2
+        dest: /etc/mysql/hell.d/go-play-elsewhere.cnf
+      - src: test/datas/mysql/client.cnf.j2
+        dest: /var/www/mysql/client.cnf

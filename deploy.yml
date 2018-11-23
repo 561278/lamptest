@@ -1,0 +1,8 @@
+---
+- hosts: lamp1
+  become: true 
+  roles:
+    - mysql
+    - users
+    - php 
+    - apache 

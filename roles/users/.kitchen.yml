@@ -1,0 +1,49 @@
+---
+driver:
+  name: docker
+  privileged: true
+  use_sudo: false
+  cap_add:
+    - ALL
+
+transport:
+  max_ssh_sessions: 6
+
+provisioner:
+  name: ansible_playbook
+  idempotency_test: no
+  require_ansible_repo: false
+  require_chef_for_busser: false
+  require_ruby_for_busser: true
+  ansible_verbose: false
+  ansible_verbosity: 2
+  ansible_cfg_path: test/ansible.cfg
+  hosts: localhost
+  ignore_extensions_from_root: [".git",".idea",".kitchen.yml"]
+  ignore_paths_from_root: [".git",".idea",".kitchen"]
+  ansible_extra_flags: <%= ENV['ANSIBLE_EXTRA_FLAGS'] %>
+  recursive_additional_copy_path: test/datas
+
+platforms:
+  - name: debian-jessie-23
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:jessie-2.3
+  - name: debian-stretch-23
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:stretch-2.3
+  - name: ubuntu-trusty-23
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:trusty-2.3
+  - name: ubuntu-xenial-23
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:xenial-2.3
+      run_command: /sbin/init
+
+verifier:
+  ruby_bindir: '/usr/bin'
+
+suites:
+  - name: users
+    provisioner:
+        name: ansible_playbook
+        playbook: test/integration/users.yml

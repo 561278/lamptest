@@ -1,0 +1,181 @@
+---
+driver:
+  name: docker
+  hostname: php
+  privileged: true
+  use_sudo: false
+  cap_add:
+    - ALL
+
+provisioner:
+  name: ansible_playbook
+  idempotency_test: no
+  require_ansible_repo: false
+  require_chef_for_busser: false
+  require_ruby_for_busser: true
+  ansible_verbose: false
+  ansible_verbosity: 2
+  ansible_cfg_path: test/ansible.cfg
+  hosts: localhost
+  ignore_extensions_from_root: [".git",".idea",".kitchen.yml"]
+  ignore_paths_from_root: [".git",".idea",".kitchen"]
+  ansible_extra_flags: <%= ENV['ANSIBLE_EXTRA_FLAGS'] %>
+
+platforms:
+
+  # Ansible 2.3
+  - name: debian-wheezy-2.3
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:wheezy-2.3
+
+  - name: debian-jessie-2.3
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:jessie-2.3
+      run_command: "/sbin/init"
+
+  - name: debian-stretch-2.3
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:stretch-2.3
+      run_command: "/sbin/init"
+
+  - name: ubuntu-trusty-2.3
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:trusty-2.3
+
+  - name: ubuntu-xenial-2.3
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:xenial-2.3
+      run_command: "/sbin/init"
+
+  - name: centos-6-2.3
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:centos6-2.3
+    verifier:
+      ruby_bindir: '/usr/local/bin'
+
+  - name: centos-7-2.3
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:centos7-2.3
+      run_command: /usr/sbin/init
+    verifier:
+      ruby_bindir: '/usr/local/bin'
+
+  # Ansible 2.4
+  - name: debian-wheezy-2.4
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:wheezy-2.4
+
+  - name: debian-jessie-2.4
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:jessie-2.4
+      run_command: "/sbin/init"
+
+  - name: debian-stretch-2.4
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:stretch-2.4
+      run_command: "/sbin/init"
+
+  - name: ubuntu-trusty-2.4
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:trusty-2.4
+
+  - name: ubuntu-xenial-2.4
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:xenial-2.4
+      run_command: "/sbin/init"
+
+  - name: centos-6-2.4
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:centos6-2.4
+    verifier:
+      ruby_bindir: '/usr/local/bin'
+
+  - name: centos-7-2.4
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:centos7-2.4
+      run_command: /usr/sbin/init
+    verifier:
+      ruby_bindir: '/usr/local/bin'
+
+
+verifier:
+  ruby_bindir: '/usr/bin'
+
+suites:
+  - name: empty
+    provisioner:
+      playbook: test/integration/empty.yml
+
+  - name: fpm53
+    provisioner:
+      playbook: test/integration/empty.yml
+      extra_vars:
+        php_version: '5.3'
+        php_sapi: 'fpm'
+    includes:
+      - debian-wheezy-2.3
+      - debian-wheezy-2.4
+
+  - name: fpm54
+    provisioner:
+      playbook: test/integration/empty.yml
+      extra_vars:
+        php_version: '5.4'
+        php_sapi: 'fpm'
+    includes:
+      - debian-wheezy-2.3
+      - centos-6-2.3
+      - debian-wheezy-2.4
+      - centos-6-2.4
+
+  - name: fpm55
+    provisioner:
+      playbook: test/integration/empty.yml
+      extra_vars:
+        php_version: '5.5'
+        php_sapi: 'fpm'
+    includes:
+      - debian-wheezy-2.3
+      - centos-6-2.3
+      - debian-wheezy-2.4
+      - centos-6-2.4
+
+  - name: fpm56
+    provisioner:
+      playbook: test/integration/empty.yml
+      extra_vars:
+        php_version: '5.6'
+        php_sapi: 'fpm'
+    excludes:
+      - ubuntu-xenial-2.3
+      - ubuntu-xenial-2.4
+
+  - name: fpm70
+    provisioner:
+      playbook: test/integration/empty.yml
+      extra_vars:
+        php_version: '7.0'
+        php_sapi: 'fpm'
+    excludes:
+      - debian-wheezy-2.3
+      - debian-wheezy-2.4
+
+  - name: fpm71
+    provisioner:
+      playbook: test/integration/empty.yml
+      extra_vars:
+        php_version: '7.1'
+        php_sapi: 'fpm'
+    excludes:
+      - debian-wheezy-2.3
+      - debian-wheezy-2.4
+
+  - name: fpm72
+    provisioner:
+      playbook: test/integration/empty.yml
+      extra_vars:
+        php_version: '7.2'
+        php_sapi: 'fpm'
+    excludes:
+      - debian-wheezy-2.3
+      - debian-wheezy-2.4

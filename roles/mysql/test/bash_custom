@@ -1,0 +1,42 @@
+PS1='\[\033[32m\]\u@\h\[\033[00m\]:\[\033[34m\]\w\[\033[31m\]$(__git_ps1)\[\033[00m\]\$ '
+
+alias ll='ls -l'
+alias la='ls -A'
+alias l='ls -CF'
+
+MY_BASH_BLUE="\033[0;34m" #Blue
+MY_BASH_NOCOLOR="\033[0m"
+HISTTIMEFORMAT=`echo -e ${MY_BASH_BLUE}[%F %T] $MY_BASH_NOCOLOR`
+HISTSIZE=20000
+HISTFILESIZE=20000
+
+if which tput >/dev/null 2>&1; then
+      ncolors=$(tput colors)
+fi
+
+if [ -t 1 ] && [ -n "$ncolors" ] && [ "$ncolors" -ge 8 ]; then
+    RED="$(tput setaf 1)"
+    GREEN="$(tput setaf 2)"
+    YELLOW="$(tput setaf 3)"
+    BLUE="$(tput setaf 4)"
+    BOLD="$(tput bold)"
+    NORMAL="$(tput sgr0)"
+  else
+    RED=""
+    GREEN=""
+    YELLOW=""
+    BLUE=""
+    BOLD=""
+    NORMAL=""
+  fi
+
+if [ -z $ANSIBLE_VAULT_PASSWORD ]; then
+      read -s -p "${YELLOW} Enter ALTERWAY l33t: " ANSIBLE_VAULT_PASS
+      export ANSIBLE_VAULT_PASSWORD=$ANSIBLE_VAULT_PASS
+fi
+
+if [ -z $ANSIBLE_CONFIG ]; then
+      export ANSIBLE_CONFIG=/usr/local/ansible/ansible.cfg
+fi
+echo ''
+cd /usr/local/ansible/orchestrator

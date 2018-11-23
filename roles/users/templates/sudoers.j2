@@ -1,0 +1,30 @@
+# {{ ansible_managed }}
+
+{% for k in item.sudo.defaults|default([]) -%}
+Defaults{{ ":" ~ item.name }} {{ k }}
+{% endfor -%}
+{#### Retrocompatiblity section #################}
+{% if item.sudo.user is defined and item.sudo.users is not defined -%}
+{% set users = item.sudo.user -%}
+{% elif item.sudo.users is defined -%}
+{% set users = item.sudo.users -%}
+{% endif -%}
+{% if 'requiretty' not in item.sudo.defaults|default([]) and '!requiretty' not in item.sudo.defaults|default([]) -%}
+{{ "Defaults:" ~ item.name ~ " requiretty"  if item.sudo.requiretty is defined and item.sudo.requiretty else "" }}
+{{ "Defaults:" ~ item.name ~ " !requiretty" if item.sudo.requiretty is defined and not item.sudo.requiretty else "" }}
+{% endif -%}
+{#### End retrocompatiblity section ############}
+{% for alias in item.sudo.runas_alias|default([]) -%}
+Runas_Alias    {{ alias }}
+{% endfor -%}
+{% for alias in item.sudo.cmnd_alias|default([]) -%}
+Cmnd_Alias     {{ alias }}
+{% endfor %}
+{% for alias in item.sudo.host_alias|default([]) -%}
+Host_Alias     {{ alias }}
+{% endfor %}
+{% for alias in item.sudo.user_alias|default([]) -%}
+User_Alias     {{ alias }}
+{% endfor %}
+{{ item.name }} {{ item.sudo.hosts|default('ALL') }}={{ "(" ~ users|default('ALL') ~ ":" ~ item.sudo.groups|default('ALL') ~ ")" }} {{ "NOPASSWD:" if item.sudo.nopasswd|default(false) else "" }} {{ item.sudo.commands|default(['ALL'])|join(', ') }}
+{{ item.sudo.append if item.sudo.append is defined else '' }}

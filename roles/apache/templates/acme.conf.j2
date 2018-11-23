@@ -1,0 +1,10 @@
+{% for ban_line in apache_ansible_managed %}
+{{ ban_line }}
+{% endfor %}
+
+Alias /.well-known/acme-challenge/ {{ apache_letsencrypt_dir }}/.well-known/acme-challenge/
+
+<Directory "{{ apache_letsencrypt_dir }}/.well-known/acme-challenge/">
+  Order allow,deny
+  Allow from all
+</Directory>

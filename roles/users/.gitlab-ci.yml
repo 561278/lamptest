@@ -1,0 +1,40 @@
+before_script:
+  - bundle install > /dev/null
+
+after_script:
+  - kitchen destroy > /dev/null
+
+stages:
+- test
+
+jessie:
+  stage: test
+  script:
+    - OS=jessie
+    - kitchen test $OS
+  except:
+    - tags
+
+stretch:
+  stage: test
+  script:
+    - OS=stretch
+    - kitchen test $OS
+  except:
+    - tags
+
+trusty:
+  stage: test
+  script:
+    - OS=trusty
+    - kitchen test $OS
+  except:
+    - tags
+
+xenial:
+  stage: test
+  script:
+    - OS=xenial
+    - kitchen test $OS
+  except:
+    - tags

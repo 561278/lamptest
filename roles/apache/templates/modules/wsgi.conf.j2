@@ -1,0 +1,16 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+<IfModule mod_wsgi.c>
+  {% if apache_modules['wsgi'].socket_prefix is defined %}
+  WSGISocketPrefix {{ apache_modules['wsgi'].socket_prefix }}
+  {% endif %}
+  {% if apache_modules['wsgi'].python_home is defined %}
+  WSGIPythonHome "{{ apache_modules['wsgi'].python_home }}"
+  {% endif %}
+  {% if apache_modules['wsgi'].python_path is defined %}
+  WSGIPythonPath "{{ apache_modules['wsgi'].python_path }}"
+  {% endif %}
+  
+</IfModule>

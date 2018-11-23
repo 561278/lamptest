@@ -1,0 +1,70 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+{% set timeout = ' -idle-timeout ' + item.value.timeout|default('15') -%}
+{% set flush = '-flush' -%}
+{% if item.value.flush is defined and not item.value.flush -%}
+    {% set flush = '' -%}
+{% endif -%}
+
+{% set host_or_socket = ' -socket /var/run/php5-fpm.sock' -%}
+{% if item.value.socket is defined -%}
+    {% set host_or_socket = ' -socket ' + item.value.socket -%}
+{% elif item.value.host is defined -%}
+    {% set host_or_socket = ' -host ' + item.value.host -%}
+{% endif -%}
+
+{% set pass_header = ' -pass-header Authorization' -%}
+{% if item.value.pass_header is defined -%}
+    {% set pass_header =  ' -pass-header ' + item.value.pass_header  -%}
+{% endif -%}
+
+{% set options = timeout + flush + host_or_socket + pass_header -%}
+
+{% set virtual_path = '/fastcgi-pool-' + item.key  -%}
+{% if item.value.virtual_path is defined -%}
+    {% set virtual_path = item.value.virtual_path  -%}
+{% endif -%}
+
+{% set alias = '/usr/lib/cgi-bin/' + item.key  -%}
+{% if item.value.alias is defined -%}
+        {% set alias = item.value.alias  -%}
+{% endif -%}
+
+{% set file_type = 'application/x-httpd-php' + '-' + item.key -%}
+{% if item.value.file_type is defined -%}
+      {% set file_type = item.value.file_type  -%}
+{% endif -%}
+
+<IfModule mod_fastcgi.c>
+          FastCGIExternalServer {{ virtual_path }}{{ options }}
+          Alias  {{ alias }} {{ virtual_path }}
+          Action {{ file_type }} {{ alias }}
+          AddType {{ file_type }} {{ file_ext|default(".php") }}
+          {% if item.value.fpm is defined -%}
+             {% set status = 'fpm-status' -%}
+             {% set ping = 'fpm-ping' %}
+             {% if item.value.fpm['status'] is defined -%}
+                {% set status = item.value.fpm['status'] -%}
+             {% endif %}
+             {% if item.value.fpm['ping'] is defined -%}
+                {% set ping = item.value.fpm['ping'] -%}
+             {% endif -%}
+             {% set status_ping = status + '|' + ping %}
+
+          <LocationMatch "/({{ status_ping }})">
+              SetHandler php-fcgi-virt
+              Action php-fcgi-virt {{ alias }} virtual
+              {% if apache_version.split('.')[1] == '4' -%}
+              Require all granted
+              {% else -%}
+              Order Deny,Allow
+              Deny from All
+              Allow from {{ item.value.fpm['allow']|default('127.0.0.1') }}
+              {% endif %}
+
+          </LocationMatch>
+          {% endif %}
+
+</IfModule>

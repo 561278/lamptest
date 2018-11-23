@@ -1,0 +1,5 @@
+{% if item.value.virtual_documentroot is defined %}
+VirtualDocumentRoot "{{ item.value.virtual_documentroot }}"
+{% elif item.value.documentroot is defined %}
+DocumentRoot  "{{ item.value.documentroot.path|default(item.value.documentroot) }}"
+{% endif %}

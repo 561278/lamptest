@@ -1,0 +1,48 @@
+{% if apache_version.split('.')[1] == '4' %}
+{% if directory['require'] is defined and directory['require'] != '' and directory['require'] != 'unmanaged' %}
+{% for require in directory['require'] %}
+{% if require['enclose'] is defined and require['enclose']|lower in ['all','none','any'] %}
+         <Require{{ require['enclose']|capitalize }}>
+{% for requires in require['requires'] %}
+             Require {{ requires }}
+{% endfor %}
+         </Require{{ require['enclose']|capitalize }}>
+{% else %}
+{% for requires in directory['require'] %}
+         Require {{ requires }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if directory['auth_require'] is defined %}
+         Require {{ directory['auth_require'] }}
+{% endif %}
+{% if directory['require'] is not defined and directory['auth_require'] is not defined %}
+         Require all granted
+{% endif %}
+{% else %}
+{% if directory['auth_require'] is defined %}
+         Require {{ directory['auth_require'] }}
+{% endif %}
+{% if directory['order'] is defined and directory['order'] != '' %}
+Order {{ directory['order']|join(',') }}
+{% else %}
+         Order allow,deny
+{% endif %}
+{% if directory['deny'] is defined %}
+{% for deny in directory['deny'] %}
+         Deny {{ deny }}
+{% endfor %}
+{% endif %}
+{% if directory['allow'] is defined %}
+{% for allow in directory['allow'] %}
+         Allow {{ allow }}
+{% endfor %}
+{% endif %}
+{% if directory['deny'] is not defined and directory['allow'] is not defined %}
+         Allow from all
+{% endif %}
+{% if directory['satisfy'] is defined and directory['satisfy'] != '' %}
+         Satisfy {{ directory['satisfy'] }}
+{% endif %}
+{% endif %}

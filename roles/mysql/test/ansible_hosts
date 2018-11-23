@@ -1,0 +1,5 @@
+localhost ansible_connection=local
+indus     ansible_connection=local
+
+[mysql-cluster]
+mysql-node[1:4]

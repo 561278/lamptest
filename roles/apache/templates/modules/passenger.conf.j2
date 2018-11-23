@@ -1,0 +1,61 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+<IfModule mod_passenger.c>
+          PassengerRoot "{{ apache_modules['passenger'].root|default(apache_mod_passenger['root']) }}"
+          {% if apache_modules['passenger'].ruby is defined -%}
+          PassengerRuby "{{ apache_modules['passenger'].ruby }}"
+          {% elif apache_mod_passenger['ruby'] is defined -%}
+          PassengerRuby "{{ apache_mod_passenger['ruby'] }}"
+          {% endif -%}
+          {% if apache_version.split('.')[1] == '4' %}
+          PassengerDefaultRuby "{{ apache_modules['passenger'].default_ruby | default(apache_mod_passenger['default_ruby']) }}"
+          {% endif %}
+          {% if apache_modules['passenger'].high_performance is defined -%}
+          PassengerHighPerformance {{ apache_modules['passenger'].high_performance }}
+          {% endif -%}
+          {% if apache_modules['passenger'].max_pool_size is defined -%}
+          PassengerMaxPoolSize {{ apache_modules['passenger'].max_pool_size }}
+          {% endif -%}
+          {% if apache_modules['passenger'].min_instances is defined -%}
+          PassengerMinInstances {{ apache_modules['passenger'].min_instances }}
+          {% endif -%}
+          {% if apache_modules['passenger'].pool_idle_time is defined -%}
+          PassengerPoolIdleTime {{ apache_modules['passenger'].pool_idle_time }}
+          {% endif -%}
+          {% if apache_version.split('.')[1] == '4' %}
+          {% if apache_modules['passenger'].max_request_queue_size is defined -%}
+          PassengerMaxRequestQueueSize {{ apache_modules['passenger'].max_request_queue_size }}
+          {% endif -%}
+          {% endif %}
+          {% if apache_modules['passenger'].max_requests is defined -%}
+          PassengerMaxRequests {{ apache_modules['passenger'].max_requests }}
+          {% endif -%}
+          {% if apache_modules['passenger'].spawn_method is defined -%}
+          PassengerSpawnMethod {{ apache_modules['passenger'].spawn_method }}
+          {% endif -%}
+          {% if apache_modules['passenger'].stat_throttle_rate is defined -%}
+          PassengerStatThrottleRate {{ apache_modules['passenger'].stat_throttle_rate }}
+          {% endif -%}
+          {% if apache_version.split('.')[1] == '2' %}
+          {% if apache_rack_autodetect is defined -%}
+          RackAutoDetect {{ apache_rack_autodetect }}
+          {% endif -%}
+          {% if apache_rails_autodetect is defined -%}
+          RailsAutoDetect {{ apache_rails_autodetect }}
+          {% endif -%}
+          {% endif %}
+          {% if apache_modules['passenger'].use_global_queue is defined -%}
+          PassengerUseGlobalQueue {{ apache_modules['passenger'].use_global_queue }}
+          {% endif -%}
+          {% if apache_version.split('.')[1] == '4' %}
+          {% if apache_modules['passenger'].app_env is defined -%}
+          PassengerAppEnv {{ apache_modules['passenger'].app_env }}
+          {% endif -%}
+          {% endif %}
+          {% if apache_modules['passenger'].log_file is defined -%}
+          PassengerDebugLogFile {{ apache_modules['passenger'].log_file }}
+          {% endif %}
+
+</IfModule>

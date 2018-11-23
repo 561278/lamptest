@@ -1,0 +1,11 @@
+- name: Install dependencies
+  apt:
+    name              : "{{ item }}"
+    update_cache      : yes
+    cache_valid_time  : 3600
+  with_items:
+    - sudo
+    - python-mysqldb
+    - "{{ 'software-properties-common' if ansible_distribution == 'Debian' and ansible_distribution_major_version == '9' else 'python-software-properties' }}"
+    - python-psycopg2
+    - python-pymongo

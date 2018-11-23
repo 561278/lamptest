@@ -1,0 +1,14 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+<VirtualHost {{ apache_defaultvhost_listen }}:{{ apache_defaultvhost_port }}>
+    DocumentRoot {{ item.doc_root }}
+
+    <Directory {{ item.doc_root }}>
+                DirectoryIndex index.php
+                Options -Indexes
+                AllowOverride None
+                {% if apache_version.split('.')[1] == '4' %}Require all granted{% endif %}
+    </Directory>
+</VirtualHost>

@@ -1,0 +1,7 @@
+---
+mysql_provider: 'oracle'
+mysql_version: '5.7'
+mysql_packages:
+  - 'mysql-server'
+  - 'mysql-client'
+  - 'mysql-common'

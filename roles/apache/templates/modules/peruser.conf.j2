@@ -1,0 +1,30 @@
+{% for ban_line in apache_ansible_managed %}
+{{ ban_line }}
+{% endfor %}
+
+<IfModule mpm_peruser_module>
+          MinSpareProcessors  {{ apache_modules['peruser'].minspareprocessors|default('2') }}
+          MaxSpareProcessors  {{ apache_modules['peruser'].maxspareprocessors|default('10') }}
+          MinProcessors       {{ apache_modules['peruser'].minprocessors|default('2') }}
+          MaxProcessors       {{ apache_modules['peruser'].maxprocessors|default('10') }}
+          MaxClients          {{ apache_modules['peruser'].maxclients|default('150') }}
+          MaxRequestsPerChild {{ apache_modules['peruser'].maxrequestsperchild|default('1000') }}
+          IdleTimeout         {{ apache_modules['peruser'].idletimeout|default('120') }}
+          ExpireTimeout       {{ apache_modules['peruser'].expiretimeout|default('120') }}
+          KeepAlive           {{ apache_modules['peruser'].keepalive|default('Off') }}
+
+          {% if apache_modules['peruser'].multiplexers is defined %}
+          {% for multiplexer in apache_modules['peruser'].multiplexers %}
+          Multiplexer {{ multiplexer['user'] }} {{ multiplexer['group'] }}
+          {% endfor %}
+          {% else %}
+          Multiplexer {{ apache_user }} {{ apache_group }}
+          {% endif %}
+          {% if apache_modules['peruser'].processors is defined %}
+          {% for processor in apache_modules['peruser'].processors %}
+          Processor {{ processor['user'] }} {{ processor['group'] }}
+          {% endfor %}
+          {% else %}
+          Processor {{ apache_user }} {{ apache_group }}
+          {% endif %}
+</IfModule>

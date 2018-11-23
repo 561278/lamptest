@@ -1,0 +1,5 @@
+{% for error_document in item.value.error_documents %}
+{% if error_document["error_code"] != '' and error_document["document"] != '' %}
+ErrorDocument {{ error_document["error_code"] }} {{ error_document["document"] }}
+{% endif -%}
+{% endfor %}

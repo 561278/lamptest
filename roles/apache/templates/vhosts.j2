@@ -1,0 +1,225 @@
+{% include "vhosts/_vhost_header.j2" %}
+
+{% if item.value.serveraliases is defined %}
+        ## Server aliases
+        {% macro serveraliases() %}{% include "vhosts/_serveralias.j2" %}{% endmacro -%}
+        {{ serveraliases()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.documentroot is defined or item.value.virtual_documentroot is defined %}
+        ## Docroot
+        {% macro docroot() %}{% include "vhosts/_docroot.j2" %}{% endmacro -%}
+        {{ docroot()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.directory is defined %}
+        ## Directory. https://httpd.apache.org/docs/current/mod/mod_dir.html
+        {% macro directory() %}{% include "vhosts/_directory.j2" %}{% endmacro -%}
+        {{ directory()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.aliases is defined %}
+        ## Alias
+        {% macro aliases() %}{% include "vhosts/_aliases.j2" %}{% endmacro -%}
+        {{ aliases()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.fastcgi is defined %}
+        ## FastCgi
+        {% macro fastcgi() %}{% include "vhosts/_fastcgi.j2" %}{% endmacro -%}
+        {{ fastcgi()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.proxy_fcgi is defined %}
+        ## FastCGI support for mod_proxy
+        {% macro proxy_fcgi() %}{% include "vhosts/_proxy_fcgi.j2" %}{% endmacro -%}
+        {{ proxy_fcgi()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.itk is defined %}
+        ## ITK
+        {% macro itk() %}{% include "vhosts/_itk.j2" %}{% endmacro -%}
+        {{ itk()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.fallbackresource is defined %}
+        ## Fallback Resource
+        {% macro fallbackresource() %}{% include "vhosts/_fallbackresource.j2" %}{% endmacro -%}
+        {{ fallbackresource()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.allow_encoded_slashes is defined %}
+        ## Encoded Slashes
+        {% macro allow_encoded_slashes() %}{% include "vhosts/_allow_encoded_slashes.j2" %}{% endmacro -%}
+        {{ allow_encoded_slashes()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.directories is defined %}
+        ## Directories
+        {% macro directories() %}{% include "vhosts/_directories.j2" %}{% endmacro -%}
+        {{ directories()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.includes is defined %}
+        ## Load additional configuration
+        {% macro includes() %}{% include "vhosts/_includes.j2" %}{% endmacro -%}
+        {{ includes()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.error_log is defined or item.value.access_log is defined %}
+        ## Logging
+        {% macro logging() %}{% include "vhosts/_logging.j2" %}{% endmacro -%}
+        {{ logging()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.action is defined or item.value.action is defined %}
+        ## Action
+        {% macro action() %}{% include "vhosts/_action.j2" %}{% endmacro -%}
+        {{ action()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.error_documents is defined %}
+        ## Errors Documents
+        {% macro errordocument() %}{% include "vhosts/_error_document.j2" %}{% endmacro -%}
+        {{ errordocument()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.headers is defined %}
+        ## Headers
+        {% macro header() %}{% include "vhosts/_header.j2" %}{% endmacro -%}
+        {{ header()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.request_headers is defined %}
+        ## Request Headers
+        {% macro requestheader() %}{% include "vhosts/_requestheader.j2" %}{% endmacro -%}
+        {{ requestheader()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.proxy_dest is defined or item.value.proxy_pass is defined or item.value.proxy_pass_match is defined or item.value.proxy_dest_match is defined %}
+        ## Proxy
+        {% macro proxy() %}{% include "vhosts/_proxy.j2" %}{% endmacro -%}
+        {{ proxy()|indent(8, false) }}
+{% endif -%}
+
+{% if item.value.rack_base_uris is defined %}
+        ## Rack Base URIs
+        {% macro rack() %}{% include "vhosts/_rack.j2" %}{% endmacro -%}
+        {{ rack()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.passenger is defined  %}
+        ## Passenger Directives
+        {% macro passenger() %}{% include "vhosts/_passenger.j2" %}{% endmacro -%}
+        {{ passenger()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.redirect is defined %}
+        ## Redirect rules
+        {% macro redirect() %}{% include "vhosts/_redirect.j2" %}{% endmacro -%}
+        {{ redirect()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.rewrites is defined %}
+        ## Rewrite rules
+        {% macro rewrite() %}{% include "vhosts/_rewrite.j2" %}{% endmacro -%}
+        {{ rewrite()|indent(8, false) }}
+{% endif -%}
+
+{% if item.value.env is defined %}
+        ## SetEnv/SetEnvIf/PassEnv/UnsetEnv environment variables
+        {% macro env() %}{% include "vhosts/_env.j2" %}{% endmacro -%}
+        {{ env()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.ssl is defined %}
+        ## SSL
+        {% macro ssl() %}{% include "vhosts/_ssl.j2" %}{% endmacro -%}
+        {{ ssl()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.ssl_proxy is defined %}
+        ## SSL Proxy
+        {% macro sslproxy() %}{% include "vhosts/_sslproxy.j2" %}{% endmacro -%}
+        {{ sslproxy()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.php_values is defined or item.value.php_flags is defined or item.value.php_admin_values is defined or item.value.php_admin_flags is defined %}
+        ## PHP_FLAGS/PHP_ADMIN_FLAGS PHP_VALUES/PHP_ADMIN_VALUES
+        {% macro php() %}{% include "vhosts/_php.j2" %}{% endmacro -%}
+        {{ php()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.wsgi is defined %}
+        ## WSGI
+        {% macro wsgi() %}{% include "vhosts/_wsgi.j2" %}{% endmacro -%}
+        {{ wsgi()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.suexec is defined %}
+        ## SuExec
+        {% macro suexec() %}{% include "vhosts/_suexec.j2" %}{% endmacro -%}
+        {{ suexec()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.default_charset is defined %}
+        ## Charset
+        {% macro charset() %}{% include "vhosts/_charsets.j2" %}{% endmacro -%}
+        {{ charset()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.security is defined %}
+        ## Mod Security
+        {% macro security() %}{% include "vhosts/_security.j2" %}{% endmacro -%}
+        {{ security()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.filters is defined %}
+        ## Filter rules
+        {% macro filter() %}{% include "vhosts/_filters.j2" %}{% endmacro -%}
+        {{ filter()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.jk is defined %}
+        ## JK Mounts/Umount
+        {% macro jk() %}{% include "vhosts/_jk.j2" %}{% endmacro -%}
+        {{ jk()|indent(8, false) }}
+
+{% endif -%}
+
+{% if item.value.setid is defined or apache_setid %}
+        ## Settings debugging information in headers.
+        {% macro debuging() %}{% include "vhosts/_debuging.j2" %}{% endmacro -%}
+        {{ debuging()|indent(8, false) }}
+
+{% endif -%}
+
+{% include "vhosts/_vhost_footer.j2" -%}

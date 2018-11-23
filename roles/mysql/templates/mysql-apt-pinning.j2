@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+{% if mysql_cluster_enabled %}
+Package: {% if mysql_provider == 'mariadb' %}percona-xtrabackup-24{% elif mysql_version == '5.6' %}percona-xtrabackup{% else %}percona-xtrabackup-*{% endif %}
+Pin: version 2.4.*
+Pin-Priority: 990
+{% endif %}
+Package: {{ item.value.pin_packages }}
+Pin: {{ item.value.pin }}
+Pin-Priority: {{ item.value.pin_priority }}

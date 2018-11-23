@@ -1,0 +1,5 @@
+#{{ ansible_managed }}
+
+# Additional environment file for php-fpm
+
+PIDFILE={{ php_fpm.pid|default(php_fpm_default.pid) }}

@@ -1,0 +1,11 @@
+termcapinfo xterm* ti@:te@
+#caption always "%{Yb} %02d-%02m-%Y %0c %{k}|%{C} AWHLAB :: INTEGRATION TESTS %{k}|%{G} %{W}%n %{R}%t"
+zombie kr
+defutf8 on
+
+
+screen -t "mysql-node1 -- MYSQL NODE 1 PRIMARY   - Stretch" docker exec -it mysql-node1 bash
+screen -t "mysql-node2 -- MYSQL NODE 2 SECONDARY - Stretch" docker exec -it mysql-node2 bash
+screen -t "mysql-node3 -- MYSQL NODE 3 SECONDARY - Stretch" docker exec -it mysql-node3 bash
+screen -t "mysql-node4 -- MYSQL NODE 4 SECONDARY - Jessie" docker exec -it mysql-node4 bash
+screen -t "awhlabindus -- INDUS NODE" docker exec -it indus bash

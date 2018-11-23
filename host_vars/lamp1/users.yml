@@ -1,0 +1,37 @@
+users_mysql:
+
+  database:
+    - name: 'lamp_bdd'
+
+  user:
+    - name: 'momo'
+      password: "abc"
+      host:
+        - 'localhost'
+        - '127.0.0.1'
+      priv:
+        - 'lamp_bdd.*:ALL'
+
+users_system:
+  group:
+    - name: 'momo'
+      gid: '1234'
+  
+  user:
+
+    - name: 'www-data'
+      groups:
+        - 'momo'
+    
+
+    - name: 'momo'
+      uid: '1234'
+      group: 'momo'
+      home: '/var/www/lamptest.fr'
+      createhome: yes 
+      sudo:
+        nopasswd       : yes
+        requiretty     : no
+        commands       :
+          - '/etc/init.d/php7.0-fpm reload'
+

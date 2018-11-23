@@ -1,0 +1,33 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+<IfModule mod_userdir.c>
+          {% if apache_modules['userdir'].disable_root is defined and apache_modules['userdir'].disable_root -%}
+          UserDir disabled root
+          {% endif -%}
+          UserDir {{ apache_modules['userdir'].home|default('/home') }}/*/{{ apache_modules['userdir'].dir|default('public_html') }}
+
+          <Directory "{{ apache_modules['userdir'].home|default('/home') }}/*/{{ apache_modules['userdir'].dir|default('public_html') }}">
+                    AllowOverride FileInfo AuthConfig Limit Indexes
+                    Options {{ apache_modules['userdir'].options|default(apache_root_directory_options)|join(' ') }}
+                    <Limit GET POST OPTIONS>
+                          {% if apache_version.split('.')[1] == '4' -%}
+                          Require all granted
+                          {% else -%}
+                          Order allow,deny
+                          Allow from all
+                          {% endif %}
+
+                    </Limit>
+                    <LimitExcept GET POST OPTIONS>
+                          {% if apache_version.split('.')[1] == '4' -%}
+                          Require all granted
+                          {% else -%}
+                          Order allow,deny
+                          Allow from all
+                          {% endif %}
+
+                    </LimitExcept>
+          </Directory>
+</IfModule>

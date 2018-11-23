@@ -1,0 +1,17 @@
+# {{ ansible_managed }}
+
+[client]
+user=root
+password={{ mysql_root_password }}
+{% for key in mysql_client_cnf %}
+{{ key }}={{ mysql_client_cnf[key] }}
+{% endfor %}
+[mysql]
+{% if mysql_replication %}
+prompt=MySQL[{{ mysql_replication_role|upper }}{{ ' and Slave of ' +  mysql_replication_slaveof|upper if mysql_replication_slaveof is defined else ' Node' }}](\\u@\\h) [\\d]>\\_
+{% elif mysql_cluster_enabled %}
+prompt=MySQLCluster[{{ mysql_wsrep_cluster_name|upper }}](\\u@\\h) [\\d]>\\_
+{% endif %}
+
+[xtrabackup]
+open-files-limit={{ mysql_xtrabackup_files_limit }}

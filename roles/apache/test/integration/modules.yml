@@ -1,0 +1,59 @@
+---
+- hosts: localhost
+  become: false
+  roles:
+    - awh-apache
+
+  pre_tasks:
+    - name: add disk_cache debian wheezy
+      set_fact:
+        apache_modules: "{{ apache_modules | combine( { 'disk_cache': {} } ) }}"
+      when: ansible_distribution == "Debian" and ansible_distribution_release == "wheezy"
+    - name: add cache_disk for others
+      set_fact:
+        apache_modules: "{{ apache_modules | combine( { 'cache_disk': {} } ) }}"
+      when: ansible_distribution != "Debian" or ansible_distribution_major_version|int >= 8
+    - name: add remoteip for Jessie and Stretch
+      set_fact:
+        apache_modules: "{{ apache_modules | combine( { 'remoteip': {} } ) }}"
+      when: ansible_distribution != "Debian" or ansible_distribution_major_version|int >= 8
+
+  vars:
+    apache_modules:
+      auth_cas:
+        login_url: https://login.example.org/cas/login
+        validate_url: https://login.example.org/cas/validate
+      authnz_ldap:
+      autoindex:
+      cache:
+      cgid:
+      dav:
+      dav_fs:
+      deflate:
+      dir:
+      expires:
+      ext_filter: {}
+      fastcgi:
+      fcgid: {}
+      geoip:
+      info:
+      ldap:
+      mime:
+      mime_magic:
+      negotiation: {}
+      pagespeed:
+      passenger:
+      proxy:
+      rpaf:
+      security:
+      socache_shmcb:
+      suexec:
+      ssl:
+      status:
+      userdir:
+      wsgi:
+      shib2:
+
+
+    apache_mod_no_template:
+      - 'shib2'

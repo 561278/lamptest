@@ -1,0 +1,43 @@
+---
+# defaults file for awh-users
+
+## Requires
+users_install_requires: True
+
+## SYSTEM
+users_system:
+  group: []
+  user: []
+
+## MYSQL
+users_mysql:
+  database: []
+  user: []
+
+users_mysql_default:
+  priv       : "*.*:USAGE"
+  login_port : 3306
+  login_host : localhost
+
+
+## POSTGRESQL
+users_postgresql:
+  database: []
+  user: []
+  priv: []
+
+users_postgresql_default:
+  admin_user : 'postgres'
+  owner      : 'postgres'
+  encoding   : 'UTF-8'
+  lc_collate : 'en_US.UTF-8'
+  lc_ctype   : 'en_US.UTF-8'
+  port       : 5432
+  login_host : localhost
+  login_user : 'postgres'
+  template   : 'template0'
+
+## MONGODB
+users_mongodb:
+  database: []
+  user: []

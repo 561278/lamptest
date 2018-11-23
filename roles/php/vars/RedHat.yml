@@ -1,0 +1,28 @@
+---
+
+### DEFAULT PHP PATH
+php_conf_dir              : '/etc'
+php_mods_available        : '/etc/php.d'
+php_apache_conf_dir       : '{{ php_conf_dir }}'
+php_apache_dest_conf_file : '{{ php_apache_conf_dir }}/php-apache.ini'
+php_fpm_conf_dir          : '{{ php_conf_dir }}'
+php_fpm_dest_conf_file    : '{{ php_fpm_conf_dir }}/php-fpm.ini'
+php_fpm_pool_dir          : '{{ php_fpm_conf_dir }}/php-fpm.d'
+php_cli_conf_dir          : '{{ php_conf_dir }}'
+php_cli_dest_conf_file    : '{{ php_cli_conf_dir }}/php-cli.ini'
+php_prefix                : 'php'
+
+## OPCODE/OPCACHE
+php_apc_conf_filename    : '50-apc.ini'
+php_opcache_conf_filename: '10-opcache.ini'
+
+## SERVICE NAME
+php_fpm_daemon           : 'php-fpm'
+php_apache_daemon        : 'httpd'
+
+php_desired_version      : '{{php_version_major}}.{{php_version_minor}}'
+php_remi:
+    url                  : "http://rpms.famillecollet.com/enterprise/remi-release-{{ ansible_distribution_major_version }}.rpm"
+    key                  : "http://rpms.remirepo.net/RPM-GPG-KEY-remi"
+    description          : "Remi Repository"
+    enablerepo           : "remi{% if php_desired_version | version_compare('5.4', '>') %},remi-php{{ php_version_major }}{{ php_version_minor }}{% endif %}"

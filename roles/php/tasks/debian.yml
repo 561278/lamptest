@@ -1,0 +1,114 @@
+---
+- name: 'Set Apt Repository Key / by keyserver'
+  apt_key:
+    keyserver: '{{ item.value.keyserver }}'
+    id      : '{{ item.value.id|default(omit) }}'
+    state   : '{{ item.value.state|default(omit) }}'
+  with_dict : '{{ php_repo }}'
+  when      : ((item.value.url is defined) and item.value.description is not defined) and item.value.keyserver is defined
+  register:  event_php_apt_key
+
+- name: 'Set Apt Repository Key / by url'
+  apt_key:
+    url     : '{{ item.value.key }}'
+    id      : '{{ item.value.id|default(omit) }}'
+    state   : '{{ item.value.state|default(omit) }}'
+  with_dict : '{{ php_repo }}'
+  when      : ((item.value.url is defined) and item.value.description is not defined) and item.value.key is defined
+  register:  event_php_apt_url
+
+- name: 'Set Repository pinning'
+  template:
+    src     : 'php-apt-pinning-repos.j2'
+    dest    : '/etc/apt/preferences.d/{{ item.key }}.pref'
+    owner   : root
+    group   : root
+    mode    : 0444
+  with_dict : '{{ php_repo }}'
+  when      : ((item.value.url is defined and item.value.pin is defined and item.value.pin_packages is defined and item.value.pin_priority is defined ) and item.value.description is not defined)
+  register:  event_php_pinning_repos
+
+- name: 'Uninstall old repository pinning'
+  file:
+    path    : '/etc/apt/preferences.d/php_repository.pref'
+    state   : absent
+  when      : (php_repo|length == 0)
+
+- name: 'Set version pinning'
+  template:
+    src     : 'php-apt-pinning-version.j2'
+    dest    : '/etc/apt/preferences.d/php_version.pref'
+    owner   : root
+    group   : root
+    mode    : 0444
+  register:  event_php_pinning_version
+
+- name: 'Set Apt repository'
+  apt_repository:
+    repo        : 'deb {{ item.value.url }} {{ item.value.distribution|default(ansible_distribution_release) }} {{ item.value.section|default("all") }}'
+    state       : '{{ item.value.state|default(omit)}}'
+  with_dict     : '{{ php_repo }}'
+  when          : ((item.value.url is defined) and item.value.description is not defined)
+
+- name: 'Apt-get Update'
+  apt:
+    update_cache: yes
+  when: event_php_pinning_version.changed or event_php_pinning_repos.changed or event_php_apt_key.changed or event_php_apt_url.changed
+
+- name: 'Ensure old php service is stopped (failure is ignored)'
+  service:
+    name: 'php{{ item }}-fpm'
+    state: 'stopped'
+  with_items: ['5', '5.6', '7.0', '7.1', '7.2']
+  when : (event_php_pinning_version.changed or php_reinstall is defined) and php_purge is defined and php_purge
+  ignore_errors: True
+
+- name: 'Purge old install'
+  apt:
+    name        : '{{ item }}'
+    state       : 'absent'
+    purge       : yes
+    force       : yes
+  when : (event_php_pinning_version.changed or php_reinstall is defined) and php_purge is defined and php_purge
+  with_items:
+    - ['php5-*', 'php5.6-*', 'php7.0-*', 'php7.1-*', 'php7.2-*', 'libapache2-mod-php*']
+
+- name: 'Install php-fpm'
+  apt:
+    name        : '{{ php_prefix }}-fpm'
+    state       : '{{ php_pkg_state|default(omit) }}'
+    force       : '{% if ansible_lsb.codename == "wheezy" %}yes{%else%}no{% endif %}'
+  when: 'php_sapi == "fpm"'
+  notify:
+    - php-fpm-start
+
+- name: 'Install php modules'
+  apt:
+    name      : '{{ php_prefix }}-{{ item }}'
+    state     : '{{ php_pkg_state|default(omit) }}'
+    force     : yes
+  with_items : "{{ php_modules|union(['cli']) }}"
+  notify:
+    - php-fpm-start
+    - php-fpm-reload
+    - php-apache-restart
+
+- name: 'Install php modules with non-standard prefix'
+  apt:
+    name      : '{{ item }}'
+    state     : '{{ php_pkg_state|default(omit) }}'
+  with_items: "{{ php_modules_extras|default([]) }}"
+  notify:
+    - php-fpm-start
+    - php-fpm-reload
+    - php-apache-restart
+
+- name: 'Clean unused PHP Config paths'
+  file:
+    path: "/etc/php/{{ item }}/"
+    state: 'absent'
+  with_items:
+    - ['5.6', '7.0', '7.1', '7.2']
+  when: 
+    - 'item != php_version_major + "." + php_version_minor'
+    - 'php_clean_unused_conf|default(True)'

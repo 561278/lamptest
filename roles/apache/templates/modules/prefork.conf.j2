@@ -1,0 +1,18 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+<IfModule mpm_prefork_module>
+          StartServers        {{ apache_modules['prefork'].startservers|default('2') }}
+          MinSpareServers     {{ apache_modules['prefork'].minspareservers|default('25') }}
+          MaxSpareServers     {{ apache_modules['prefork'].maxspareservers|default('75') }}
+          ServerLimit         {{ apache_modules['prefork'].serverlimit|default('25') }}
+          {% if apache_version.split('.')[1] == '4' %}
+          MaxRequestWorkers   {{ apache_modules['prefork'].maxrequestworkers|default('150') }}
+          MaxConnectionsPerChild {{ apache_modules['prefork'].maxconnectionsperchild|default('0') }}
+          {% else %}
+          MaxClients          {{ apache_modules['prefork'].maxclients|default('150') }}
+          MaxRequestsPerChild {{ apache_modules['prefork'].maxrequestsperchild|default('0') }}
+          {% endif %}
+          ListenBacklog       {{ apache_modules['prefork'].listenbacklog|default('511') }}
+</IfModule>

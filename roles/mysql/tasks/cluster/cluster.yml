@@ -1,0 +1,97 @@
+---
+- name: Ensure xinetd is installed
+  apt:
+   name: xinetd
+   state: present
+
+- name: Create the cluster users
+  mysql_user:
+    name: "{{ mysql_cluster_user }}"
+    host: "{{ item }}"
+    password: "{{ mysql_cluster_password}}"
+    priv: "*.*:SUPER,RELOAD,PROCESS,REPLICATION CLIENT,REPLICATION SLAVE,LOCK TABLES"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    state: present
+  with_items:
+    - "{{ mysql_cluster_host }}"
+    - 127.0.0.1
+    - localhost
+  loop_control:
+    label: "{{ mysql_cluster_user + '@' + item }}"
+
+- name: Stop all nodes
+  service:
+    name: mysql
+    state: stopped
+
+- name: Fecth debian cnf
+  fetch:
+    src: "{{ mysql_conf_dir}}/debian.cnf"
+    dest: "{{ mysql_fetch_dir }}/debian.cnf"
+    flat: yes
+    changed_when: false
+  when:
+    - inventory_hostname == "{{ mysql_cluster_init_node }}"
+    - mysql_version not in ['5.7']
+
+- name: Push debian CNF on all nodes
+  copy:
+    src: "{{ mysql_fetch_dir }}/debian.cnf"
+    dest: "{{ mysql_conf_dir }}/debian.cnf"
+    owner: root
+    group: root
+    mode: 0600
+  when:
+    - inventory_hostname != "{{ mysql_cluster_init_node }}"
+    - mysql_version not in ['5.7']
+
+- name: Add clustercheck script
+  copy:
+    src: "files/clustercheck.sh"
+    dest: "/usr/local/bin/clustercheck"
+    owner: root
+    group: root
+    mode: 0777
+
+- name: Create cluster config
+  template:
+    src: "conf.d/cluster.cnf.j2"
+    dest: "{{ mysql_conf_dir }}/conf.d/cluster.cnf"
+  tags: conf
+
+- name: Create mysqlchk xinetd config
+  template:
+    src: "mysqlchk.j2"
+    dest: "/etc/xinetd.d/mysqlchk"
+
+- name: Ensure /etc/services have entry for mysqlchk with xinetd
+  lineinfile:
+    dest: /etc/services
+    line: "mysqlchk        {{ mysql_cluster_xinetd_port }}/tcp            # mysqlchk"
+    state: present
+
+- name: Start First Cluster node Percona and old Galera
+  shell: "{{ mysql_cluster_bootstrap }}"
+  when:
+    - inventory_hostname == "{{ mysql_cluster_init_node }}"
+    - mysql_provider == 'percona' or ansible_service_mgr|default() != 'systemd'
+
+- name: Start First Cluster node Galera with systemd
+  shell: "{{ mysql_cluster_bootstrap }}"
+  when:
+    - inventory_hostname == "{{ mysql_cluster_init_node }}"
+    - ansible_service_mgr|default() == 'systemd'
+    - mysql_provider == 'mariadb'
+    - mysql_version|version_compare('10.1', '>=')
+
+- name: Start all nodes whitout init node. Please be patient. Process can take a while...
+  service:
+    name: mysql
+    state: started
+  when: inventory_hostname != "{{ mysql_cluster_init_node }}"
+
+- name: Cluster Check
+  shell: "/usr/local/bin/clustercheck {{ mysql_cluster_user }} {{ mysql_cluster_password }} {{ mysql_cluster_available_donor }}"
+  when: mysql_wsrep_sst_method in ["xtrabackup","xtrabackup-v2"]
+  tags: check_cluster

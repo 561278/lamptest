@@ -1,0 +1,20 @@
+{% for ban_line in apache_ansible_managed %}
+{{ ban_line }}
+{% endfor %}
+
+<IfModule mpm_event_module>
+          ServerLimit            {{ apache_modules['event'].serverlimit|default('25')}}
+          StartServers           {{ apache_modules['event'].startservers|default('2') }}
+          MinSpareThreads        {{ apache_modules['event'].minsparethreads|default('25') }}
+          MaxSpareThreads        {{ apache_modules['event'].maxsparethreads|default('75') }}
+          ThreadsPerChild        {{ apache_modules['event'].threadsperchild|default('25') }}
+          {% if apache_version.split('.')[1] == '4' -%}
+          MaxRequestWorkers      {{ apache_modules['event'].maxrequestevents|default('150') }}
+          MaxConnectionsPerChild {{ apache_modules['event'].maxconnectionsperchild|default('0') }}
+          {% else -%}
+          MaxClients		 {{ apache_modules['event'].maxclients|default('150') }}
+          MaxRequestsPerChild    {{ apache_modules['event'].maxrequestsperchild|default('0') }}
+          {% endif -%}
+          ThreadLimit            {{ apache_modules['event'].threadlimit|default('64') }}
+          ListenBacklog          {{ apache_modules['event'].listenbacklog|default('511') }}
+</IfModule>

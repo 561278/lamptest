@@ -1,0 +1,22 @@
+---
+
+mysql_packages :
+  - 'percona-server-server-{{ mysql_version }}'
+  - 'percona-server-client-{{ mysql_version }}'
+  - 'percona-server-common-{{ mysql_version }}'
+  - 'mysqltuner'
+
+mysql_cluster_packages:
+  - 'percona-xtradb-cluster-server-{{ mysql_version }}'
+  - 'percona-xtradb-cluster-client-{{ mysql_version }}'
+  - 'percona-xtradb-cluster-galera-3'
+  - "{{ 'percona-xtrabackup' if mysql_version == '5.6' else 'percona-xtrabackup-24' }}"
+  - 'mysqltuner'
+
+mysql_debconf:
+  name    : "{{ 'percona-server-server-' if not mysql_cluster_enabled else 'percona-xtradb-cluster-server-' }}{{ mysql_version }}"
+  question:
+    - "{{ 'percona-server-server-' if not mysql_cluster_enabled else 'percona-xtradb-cluster-server-' }}{{ mysql_version }}/root-pass"
+    - "{{ 'percona-server-server-' if not mysql_cluster_enabled else 'percona-xtradb-cluster-server-' }}{{ mysql_version }}/re-root-pass"
+mysql_cluster_bootstrap: 'service mysql bootstrap-pxc'
+mysql_wsrep_provider: '/usr/lib/galera3/libgalera_smm.so'

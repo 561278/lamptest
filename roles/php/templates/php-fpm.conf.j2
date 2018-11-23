@@ -1,0 +1,27 @@
+; {{ ansible_managed }}
+
+;;;;;;;;;;;;;;;;;;;;;
+; FPM Configuration ;
+;;;;;;;;;;;;;;;;;;;;;
+
+[global]
+pid = {{ php_fpm.pid|default(php_fpm_default.pid) }}
+error_log = {{ php_fpm.error_log|default(php_fpm_default.error_log) }}
+{% if php_fpm.syslog_facility is defined %}syslog.facility = {{ php_fpm.syslog_facility }}{% endif %}
+{% if php_fpm.syslog_ident is defined %}syslog.ident = {{ php_fpm.syslog_ident }}{% endif %}
+log_level = {{ php_fpm.log_level|default(php_fpm_default.log_level) }}
+emergency_restart_threshold = {{ php_fpm.emergency_restart_threshold|default(php_fpm_default.emergency_restart_threshold) }}
+emergency_restart_interval = {{ php_fpm.emergency_restart_interval|default(php_fpm_default.emergency_restart_interval) }}
+process_control_timeout = {{ php_fpm.process_control_timeout|default(php_fpm_default.process_control_timeout) }}
+{% if php_fpm.process_max is defined %}process.max = {{ php_fpm.process_max }}{% endif %}
+{% if php_fpm.process_priority is defined %}process.priority = {{ php_fpm.process_priority }}{% endif %}
+daemonize = {{ php_fpm.daemonize |default(php_fpm_default.daemonize)}}
+{% if php_fpm.rlimit_files is defined %}rlimit_files = {{ php_fpm.rlimit_files }}{% endif %}
+{% if php_fpm.rlimit_core is defined %}rlimit_core = {{ php_fpm.rlimit_core }}{% endif %}
+{% if php_fpm.events_mechanism is defined %}events.mechanism = {{ php_fpm.events_mechanism }}{% endif %}
+
+;;;;;;;;;;;;;;;;;;;;
+; Pool Definitions ;
+;;;;;;;;;;;;;;;;;;;;
+
+include={{ php_fpm_pool_dir }}/*.conf

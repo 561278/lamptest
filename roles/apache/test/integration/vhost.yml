@@ -1,0 +1,878 @@
+---
+- hosts: localhost
+  become: false
+  roles:
+    - awh-apache
+  pre_tasks:
+    - name: install vim and git
+      apt:
+        name: '{{ item }}'
+        state: present
+      with_items:
+        - git
+        - vim
+    - name: create custom group
+      group:
+        name: combo
+    - name: create custom user
+      user:
+        name: webhoster
+        group: combo
+    - name: create empty dir
+      file:
+        name: '{{ item }}'
+        state: directory
+        recurse: true
+      with_items:
+        - /etc/apache2
+        - /opt/certs
+        - /opt/crl
+        - /etc/apache/ssl/certs/
+    - name: create empty files
+      copy:
+        dest: '{{ item }}'
+        content: ''
+      with_items:
+        - '/etc/apache2/rewrite.conf'
+        - '/etc/apache2/security.conf'
+        - '/etc/apache2/probe.conf'
+        - '/usr/local/bin/php-wrapper'
+
+    - name: create dummy certs
+      copy:
+        dest: '{{ item }}'
+        src: ./test/integration//data/ssl/www.helldorado.info.cert
+      with_items:
+        - /opt/certs/chain.cert
+        - /opt/certs/ca.cert
+        - /opt/crl/no.cert
+        - /etc/apache/ssl/certs/ssl2.crt
+        - /opt/certs/toto.crt
+
+    - name: create dummy key
+      copy:
+        dest: '{{ item }}'
+        src: ./test/integration/data/ssl/www.helldorado.info.key
+      with_items:
+        - /etc/apache/ssl/certs/ssl2.key
+        - /opt/certs/toto.key
+
+    - name: create dummy group
+      group:
+        name: dummy
+    - name: create dummy user
+      user:
+        name: dummy
+        group: dummy
+
+    - name: set a vhost debian wheezy
+      set_fact:
+        apache_vhosts: "{{ apache_vhosts | combine( { 'filter': { 'filters': [ 'FilterDeclare  gzip CONTENT_SET' , 'FilterProtocol gzip change=yes;byteranges=no' , 'FilterProvider gzip DEFLATE resp=Content-Type $text/html' , 'FilterChain    gzip'] , 'documentroot': { 'path' : '/var/www/filter' } } } ) }}"
+      when: ansible_distribution == "Debian" and ansible_distribution_release == "wheezy"
+    - name: set a vhost for others
+      set_fact:
+        apache_vhosts: "{{ apache_vhosts | combine( { 'filter': { 'filters': [ 'FilterDeclare  COMPRESS' , 'FilterProvider COMPRESS DEFLATE \"%{Content_Type} = \\\"text/html\\\"\"' , 'FilterChain    COMPRESS' , 'FilterProtocol COMPRESS DEFLATE change=yes;byteranges=no' ] , 'documentroot': { 'path' : '/var/www/filter' } } } ) }}"
+      when: ansible_distribution != "Debian" or ansible_distribution_release != "wheezy"
+    - name: add a vhost to enable
+      set_fact:
+        apache_default_enabled_modules: '{{ apache_default_enabled_modules + ["vhost_alias", "auth_digest", "auth_basic", "authz_groupfile"] }}'
+
+  vars:
+    apache_mpm: prefork
+    apache_log_formats: combined
+    awh_ip: ['89.31.149.185','185.31.150.126','90.85.207.113']
+    apache_badbot:
+      useragent  :
+        - 'Baiduspider'
+        - 'Yandex'
+        - '^HTTrack'
+        - '^Express\ WebPictures'
+      scanners   :
+        - 'sqlmap'
+        - 'Acunetix'
+        - 'FHscan'
+        - 'Nikto'
+      ip         :
+        - '38.100.19.8/29'
+        - '65.213.208.128/27'
+        - '65.222.185.72'
+      host       :
+        - 'moreidiots.example'
+        - 'phishers.example.com'
+      cyveillance: true
+    apache_block:
+      scm:
+        - 'hg'
+
+    apache_bind:
+      - '*:80'
+      - '*:8080'
+      - '*:443'
+      - '*:8443'
+
+    apache_modules:
+      prefork:
+      expires:
+        module_state        : enabled
+      deflate:
+        module_state        : enabled
+      passenger:
+        module_state        : enabled
+      auth_cas:
+        login_url    :  'https://helldorado.info/cas/login'
+        validate_url :  'https://helldorado.info/cas/Validate'
+      info:
+      ext_filter:
+        slowdown   : 'mode=output cmd=/bin/cat preservescontentlength'
+        tracebefore: 'cmd="/bin/tracefilter.pl /tmp/tracebefore" EnableEnv=trace_this_client'
+      rpaf:
+        proxy_ips:
+           - 10.0.1.11
+           - 10.0.1.12
+      status:
+        allow_from:
+          - 10.0.1.51 10.0.1.52
+          - 10.10.1.0/28
+      userdir: []
+      mime: []
+      mime_magic:
+      fastcgi: []
+      fcgid: {}
+      proxy:
+        allow_from:
+          - 10.1.1.1
+      ssl:
+      socache_shmcb:
+      wsgi:
+      security:
+      shib2:
+      suexec:
+      jk:
+      geoip:
+      php:
+      ldap:
+        trusted_global_cert_file: /opt/certs/toto.key
+      authnz_ldap:
+    apache_fastcgi:
+      'helldorado':
+         socket      : '/var/run/php5-fpm.sock'
+         timeout     : '30'
+         flush       : false
+         alias       : '/var/www/php.fcgi'
+         fpm:
+
+    apache_mod_no_template:
+      - 'shib2'
+
+    apache_htpasswd:
+      - name: 'helldorado'
+        path : '/etc/apache2/.helldorado_htpasswd'
+        users:
+          - username: 'hell'
+            password: 'VrJQH7FenkJHUnH3fOvhMxiS2Q'
+          - username: 'helladmin'
+            password: 'BibyodTadgiamarWed8'
+      - name: 'grafana-helldorado'
+        users:
+          - username: 'client1'
+            password: 'rTicCNc9368YU'
+          - username: 'client2'
+            password: 'CebMonUdew'
+
+#    apache_vhosts_template: 'test/integration/data/default/vhosts.j2'
+
+    apache_vhosts:
+      'empty':
+        documentroot: /var/www/empty
+
+      'donkey':
+        priority: '012'
+        proxy_fcgi:
+          socket: /var/run/php-www.sock
+        serveradmin: "webmaster@alterway.fr"
+        setid:
+          allow_from: ['{{ hostvars[inventory_hostname]["ansible_eth0"]["ipv4"]["address"] }}', '{{ awh_ip|join(" ")}}']
+          filename: True
+        documentroot:
+          path : '/var/www/awh'
+          user : "{{ 'apache' if ansible_os_family == 'RedHat' else 'www-data' }}"
+          group: "{{ 'apache' if ansible_os_family == 'RedHat' else 'www-data' }}"
+          data:
+            provider: 'content'
+            dest: 'index.php'
+            content: |
+                     <?php
+                     header( 'Cache-Control: no-store, no-cache, must-revalidate' );
+                     header( 'Pragma: no-cache' );
+                     echo gethostname(); ?>
+
+      'amalgam':
+        action: 'image/gif'
+        allow_encoded_slashes: "On"
+        default_charset: utf-8
+        directory:
+          index:
+            - index.php
+            - index.html
+            - index.rb
+          index_redirect: 'off'
+          check_handler: 'On'
+          slash: 'Off'
+        env:
+          setenv:
+            - 'SPECIAL_PATH /foo/bin'
+            - 'LD_LIBRARY_PATH /usr/local/lib'
+            - 'newrelic.app_name "SPYNAL"'
+          setenvif:
+            - 'Request_URI "\.gif$" object_is_image=gif'
+            - 'object_is_image xbm XBIT_PROCESSING=1'
+          passenv:
+             - SPECIAL_PATH
+             - newrelic.app_name
+          unsetenv:
+             - LD_LIBRARY_PATH
+             - SHLVL
+        error_documents:
+          - error_code: '503'
+            document: '/var/www/helldorado/503.html'
+          - error_code: '404'
+            document: 'http://helldorado.info/missing/404.html'
+        fallbackresource: /index.html
+        headers:
+          - set my-custom-header "%D %t"
+          - merge Cache-Control no-cache env=NO_CACHE
+        includes:
+          - '/etc/apache2/rewrite.conf'
+          - '/etc/apache2/security.conf'
+          - '/etc/apache2/probe.conf'
+        priority: '098'
+        redirect:
+          - source: '/images/'
+            destination: 'http://static.helldorado.info/'
+            status: 'permanent'
+          - source: '/downloads'
+            destination: 'http://download.helldorado.info/'
+          - source_match: '\.git(/.*|$)/'
+            destination: 'http://gitlab.helldorado.info/'
+          - source_match: '(.*)\.gif$'
+            destination: 'http://helldorado.info/gif/$1.gif'
+            status: 'temp'
+        request_headers: ['edit Destination ^https: http: early']
+        require: ['not ip 38.100.19.8/29', 'not ip 65.222.185.72', 'not group locked']
+        serveradmin: admin@amalgam.non-existent
+        serveraliases:
+          - amalgam.non-existent
+          - non-existent
+          - sabrewulf.amalgam.non-existent fulgor.amalgam.non-existent raiden.amalgam.non-existent
+          - www.non-existent
+        servername : www.amalgam.non-existent
+        suexec:
+          user: webhoster
+          group: combo
+        virtual_documentroot: /var/www/amalgam
+
+      'log1':
+        documentroot:
+          path: /var/www/log
+        error_log:
+          dest: /var/log/apache2/helldorado.log
+        access_log:
+          dest : /var/log/apache2/access_helldorado.log
+          format: '"%t - %a" test'
+
+      'log2':
+        documentroot:
+          path: /var/www/log
+        error_log:
+          level : warn
+          dest: helldorado.log
+        access_log:
+          dest : access_helldorado.log
+          format: '"%t - %a" test'
+
+      'log3':
+        serveraliases:
+          - log3Doom
+        documentroot:
+          path: /var/www/log
+          create: no
+        error_log:
+          pipe: /bin/false
+        access_log:
+          dest : syslog
+
+      'log4':
+        documentroot:
+          path: /var/www/log
+        error_log:
+        access_log:
+          pipe: /bin/false
+
+      'log5':
+        documentroot:
+          path: /var/www/log
+        error_log:
+        access_log:
+
+      'log6':
+        servername: logsix
+        documentroot:
+          path: /var/www/log
+        error_log:
+        access_log:
+
+      'log7':
+        documentroot:
+          path: /var/www/log7
+        error_log:
+          dest: /var/log/apache2/log7-error/helldorado.log
+        access_log:
+          dest : /var/log/apache2/log7-access/access_helldorado.log
+          format: '"%t - %a" test'
+
+      'log8':
+         documentroot:
+           path: /var/www/log8
+         error_log:
+           dest: /var/log/apache2/log8-error/helldorado.log
+           owner: webhoster
+           group: adm
+         access_log:
+           dest : /var/log/apache2/log8-access/access_helldorado.log
+           group: combo
+           format: '"%t - %a" test'
+
+      'logdefault':
+        documentroot:
+          path: /var/www/log
+
+      'aliases':
+        documentroot: /var/www/aliases
+        aliases:
+          - alias: '/image'
+            path: '/ftp/pub/image'
+          - aliasmatch: '^/image/(.*)\.jpg$'
+            path: '/files/jpg.images/$1.jpg'
+          - scriptalias: '/nagios/cgi-bin/'
+            path: '/usr/lib/nagios/cgi-bin/'
+          - scriptaliasmatch: '^/cgi-bin(.*)'
+            path: '/usr/local/share/cgi-bin$1'
+
+      'setid1':
+        servername: setidone
+        documentroot: /var/www/setid
+      'setid2':
+        documentroot: /var/www/setid
+        setid:
+          allow_from:
+            - 10.0.0.1
+            - 192.168.0.1
+      'setid3':
+        servername: setidthree
+        priority: '002'
+        documentroot: /var/www/setid
+        setid:
+          filename: true
+      'setid4':
+        documentroot: /var/www/setid
+        setid:
+          filename: true
+
+      'directoriesempty1':
+        documentroot: /var/www/directories
+        directories: []
+      'directoriesempty2':
+        documentroot: /var/www/directories
+        directories:
+          - path: ''
+      'directoriesproviders':
+        documentroot: /var/www/directories
+        aliases:
+          - scriptalias: '/secure'
+            path: '/etc/shibboleth/shibenv.php'
+        directories:
+          - path: '/toto'
+            provider: directory
+          - path: '/tototo'
+            provider: directorymatch
+          - path: '/tata'
+            provider: location
+          - path: '/tatata'
+            provider: locationmatch
+          - path: '/titi'
+            provider: files
+          - path: '/tititi'
+            provider: filesmatch
+          - path: '/tutu'
+            provider: proxy
+          - path: '/tututu'
+            provider: proxymatch
+          - path: '/secure'
+            provider: location
+            auth_type: 'shibboleth'
+            extra_parameters: |
+              ShibRequestSetting requireSession 1
+              ShibRequestSetting applicationId default
+            require:
+              - 'shib-session'
+      'directoriesdirectory':
+        documentroot: /var/www/directories
+        suphp_engine: 'on'
+        directories:
+          - path: "/opt"
+            provider: files
+            index_options:
+              - titi
+              - toto
+              - tata
+            index_order_default:
+              - tutu
+            index_style_sheet: /opt/none.css
+            allowoverride:
+              - Everything
+              - None
+          - path: "/tmp"
+            provider: directory
+            headers:
+              - set my-custom-header "%D %t"
+              - merge Cache-Control no-cache env=NO_CACHE
+            geoip_enable: 'on'
+            options:
+              - -Indexes
+              - -FollowSymlinks
+              - +MultiViews
+            index_options:
+              - type=text/plain
+              - -IgnoreCase
+              - +IgnoreClient
+            index_order_default:
+              - Ascending Name
+            index_style_sheet: /opt/style.css
+            allowoverride:
+              - Limit
+              - FileInfo
+            require:
+              - enclose: all
+                requires: ['method GET POST OPTIONS', 'ldap-group cn=Administrators,o=awh', 'ldap-attribute o="st"']
+              - enclose: any
+                requires: ['group admin', 'group wheel', 'group god']
+            auth_require: 'valid-user'
+            order:
+              - deny
+              - allow
+            deny:
+              - from 8.8.8.8
+              - from all
+            allow:
+              - from 127.0.0.1
+              - from 192.168.0.0/16
+            satisfy: Any
+            addhandlers:
+              - handler : 'cgi-script'
+                extensions :
+                  - '.cgi'
+                  - '.gi'
+              - handler : 'test'
+                extensions :
+                  - '.test'
+                  - '.tst'
+            sethandler: 'kiwi'
+            passenger_enabled: 'on'
+            php_flags:
+              short_open_tag: 'Off'
+              precision: '13'
+            php_values:
+              asp_tags: '1'
+              allow_call_time_pass_reference: '0'
+            php_admin_flags:
+              zend.multibyte: '1'
+            php_admin_values:
+              html_errors: '1'
+            directoryindex: 'toto.php'
+            error_documents:
+              - error_code: '502'
+                document: '/var/www/helldorado/502.html'
+              - error_code: '403'
+                document: 'http://helldorado.info/missing/403.html'
+            auth_type: 'Digest'
+            auth_name: 'kitchen iz gud'
+            auth_digest_algorithm: 'MD5'
+            auth_digest_domain:
+              - /
+              - /toto
+              - /titi
+            auth_digest_nonce_lifetime: '400'
+            auth_digest_provider: 'file'
+            auth_digest_qop: 'auth'
+            auth_basic_authoritative: 'off'
+            auth_basic_fake: 'demo passwd'
+            auth_basic_provider: 'file'
+            auth_user_file: '/opt/.htpasswd'
+            auth_group_file: '/opt/.htpasswd.grp'
+            fallbackresource: none.php
+            expires_active: 'on'
+            expires_default: modification plus 3 weeks
+            expires_by_type:
+              - 'image/gif "access plus 2 days"'
+              - 'text/html "access plus 1 hours"'
+            ext_filter_options: LogStderr
+            force_type: text/plain
+            ssl_options:
+              - +FakeBasicAuth
+              - -StrictRequire
+            fcgiwrapper:
+              command: /usr/local/bin/php-wrapper
+              suffix: .php
+              virtual: virtual
+            rewrites:
+              - comment : 'Lynx or Mozilla v1/2'
+                cond    :
+                  - '%{HTTP_USER_AGENT} ^Lynx/ [OR]'
+                  - '%{HTTP_USER_AGENT} ^Mozilla/[12]'
+                rule    :
+                  - '^index\.html$ welcome.html'
+                base    : /apps/
+            setenv:
+              - 'SPECIAL_PATH /foo/bin'
+              - 'LD_LIBRARY_PATH /usr/local/lib'
+              - 'newrelic.app_name "SPYNAL"'
+            set_output_filter: INCLUDES
+      'fastcgidefault':
+        documentroot: /var/www/fastcgi
+        fastcgi:
+      'fastcgi1':
+        documentroot: /var/www/fastcgi
+        fastcgi:
+          timeout: 30
+          flush: false
+          socket: /var/run/php.sock
+          pass_header: X-PHP
+          file_type: app/php
+          file_ext: .php5
+          virtual_path: /Fcgiptest
+          alias: /usr/lib/cgi-bin/toto
+          fpm:
+            status: st
+            ping: p
+            allow: 10.0.0.5
+      'fastcgi2':
+        documentroot: /var/www/fastcgi
+        fastcgi:
+          host: 127.0.0.1:9000
+          fpm:
+      'itkdefault':
+        documentroot: /var/www/itk
+        itk:
+      'itkvars':
+        documentroot: /var/www/itk
+        itk:
+          user: dummy
+          group: dummy
+          assignuseridexpr: '%{HOST}'
+          assigngroupidexpr: '%{HOST}'
+          maxclientvhost: 3
+          nice: 4
+          limituidrange: 1000 2000
+          limitgidrange: 1000 2000
+      'passengerdefault':
+        documentroot: /var/www/passenger
+        passenger:
+      'passengervars':
+        documentroot: /var/www/passenger
+        passenger:
+          base_uris:
+            - /toto
+            - /titi
+            - /tutu
+          app_root: /rubyis
+          app_env: prod
+          ruby: 2.2
+          min_instances: 1
+          start_timeout: 120
+          pre_start: 12
+          user: dummy
+          group: dummy
+      'proxy1':
+        documentroot: /var/www/proxy
+        proxy_preserve_host: yes
+        proxy_error_override: yes
+        require:
+          - enclose: none
+            requires: ['group temps', 'ldap-group cn=Temporary Employees,o=Alterway']
+        proxy_pass:
+          - path: /toto
+            url: http://127.0.0.1
+          - path: /titi
+            url: http://127.0.0.2
+            params:
+              keepalive: 'on'
+              retry: 20
+            reverse_urls:
+              - http://127.1.0.2
+              - http://127.1.0.3
+          - path: /tutu
+            url: http://127.0.0.3
+            keywords:
+              - nocanon
+              - interpolate
+            setenv:
+              - proxy-nokeepalive 1
+            options:
+              ProxyBlock: '"news.example.com" "auctions.example.com" "friends.example.com"'
+          - path: /tata
+            url: http://127.0.0.4
+            params:
+              keepalive: 'on'
+              retry: 20
+            keywords:
+              - nocanon
+              - interpolate
+            reverse_cookies:
+              - path: /cookie
+                url: http://gogol.fr
+              - domain: cookie.yum
+                url: http://gogol.fr
+      'proxy2':
+        documentroot: /var/www/proxy
+        proxy_pass_match:
+          - path: /riri
+            url: http://127.0.0.1
+          - path: /roro
+            url: http://127.0.0.2
+            params:
+              keepalive: 'on'
+              retry: 20
+            reverse_urls:
+              - http://127.1.0.2
+              - http://127.1.0.3
+          - path: /ruru
+            url: http://127.0.0.3
+            keywords:
+              - nocanon
+              - interpolate
+            setenv:
+              - proxy-nokeepalive 1
+          - path: /rara
+            url: http://127.0.0.4
+            params:
+              keepalive: 'on'
+              retry: 20
+            keywords:
+              - nocanon
+              - interpolate
+      'proxy3':
+        documentroot: /var/www/proxy
+        proxy_no_uris:
+          - /not
+          - /through
+          - /proxy
+        proxy_dest: http://127.3.0.1
+      'proxy4':
+        documentroot: /var/www/proxy
+        proxy_dest_match: http://127.4.0.1
+        proxy_dest_reverse_match: http://127.4.0.2
+        proxy_no_uris_match:
+          - /might
+          - /none
+          - /never
+
+      'rack':
+        documentroot: /var/www/rack
+        rack_base_uris:
+          - /totototo
+          - /tatatata
+
+      'rewrite1':
+        documentroot: /var/www/rewrites
+        rewrites:
+          - comment : 'Lynx or Mozilla v1/2'
+            cond    :
+              - '%{HTTP_USER_AGENT} ^Lynx/ [OR]'
+              - '%{HTTP_USER_AGENT} ^Mozilla/[12]'
+            rule    :
+              - '^index\.html$ welcome.html'
+          - comment : 'Internet Explorer'
+            cond    :
+              - '%{HTTP_USER_AGENT} ^MSIE'
+            rule    :
+              - '^index\.html$ /index.IE.html [L]'
+          - comment : 'Rewrite to lower case'
+            cond    :
+              - '%{REQUEST_URI} [A-Z]'
+            map     :
+              - 'lc int:tolower'
+            rule    :
+              - '(.*) ${lc:$1} [R=301,L]'
+
+      'rewrite2':
+        documentroot: /var/www/rewrites
+        rewrite_options: Inherit
+        rewrites:
+          - base    : /apps/
+            rule    :
+              - '^index\.cgi$ index.php'
+              - '^index\.html$ index.php'
+              - '^index\.asp$ index.html'
+
+      'rewrite3':
+        rewrites:
+          - comment : 'Rewrite without documentroot test'
+            cond:
+              - '%{HTTP_HOST} !^www'
+            rule:
+              - '^(.*)$ http://www.toto.fr$1 [R=301,L]'
+
+      'security1':
+        documentroot: /var/www/security
+        security:
+          disable_ids :
+            /location1:
+              - 90015
+              - 90016
+
+      'security2':
+        documentroot: /var/www/security
+        security:
+          disable_vhost :
+            /location1:
+              - 90015
+              - 90016
+          disable_ips:
+            - 8.8.8.8
+            - 8.8.4.4
+          body_limit: 4096
+
+      'wsgi1':
+        documentroot: /var/www/wsgi
+        wsgi:
+          application_group   : '%{GLOBAL}'
+          daemon_process      :
+            name   : 'wsgi'
+            options:
+              processes    : '2'
+              threads      : '15'
+              display-name : '%{GROUP}'
+          import_script         :
+            path    : '/var/www//python-app/abstract.wsgi'
+            options :
+              process-group     : 'wsgi'
+              application-group : '%{GLOBAL}'
+          process_group       : 'wsgi'
+          script_aliases      :
+            /: '/var/www/python-app/appliance.wsgi'
+            /combo: '/var/www/python-app/combo.wsgi'
+          pass_authorization: 'on'
+          chunked_request: 'on'
+      'wsgi2':
+        documentroot: /var/www/wsgi
+        wsgi:
+
+      'ssl1':
+        documentroot: /var/www/ssl
+        servername: sslone
+        ssl:
+          autosigned:
+             subject    : '/C=FR/ST=PARIS/L=Paris/O=HELLDORADO/OU=DEVOPS/CN=helldorado.info'
+             days       : 10
+             extensions : v3_req
+             digest     : MD5
+             bit        : 4096
+          certs_dir: /opt/certs
+          chain: /opt/certs/chain.cert
+          ca: /opt/certs/ca.cert
+          crl_path: /opt/crl
+          crl: /opt/crl/no.cert
+          crl_check: 'leaf'
+          protocol:
+            - all
+            - -SSLv3
+          cipher: 'RSA:!EXP:!NULL:+HIGH:+MEDIUM:-LOW'
+          honorcipherorder: 'on'
+          verify_client: require
+          verify_depth: 1
+          options:
+            - +StdEnvVars
+            - -ExportCertData
+          openssl_conf_cmd: ECDHParameters brainpoolP256r1
+        state: disabled
+      'ssl2':
+        documentroot: /var/www/ssl
+        ssl:
+          autosigned:
+          certs_dir: /etc/apache/ssl/certs
+      'ssl3':
+        servername: helldorado.info
+        documentroot: /var/www/ssl
+        ssl:
+          cert: /opt/certs/toto.crt
+          key: /opt/certs/toto.key
+      'ssl4':
+        documentroot: /var/www/ssl
+        ssl:
+          ssl_src: test/integration/data/ssl
+          certs_dir: /opt/certs
+          cert: /opt/certs/www.helldorado.info.crt
+          key: /opt/certs/www.helldorado.info.key
+        state: disabled
+
+      'sslproxy1':
+        documentroot: /var/www/sslproxy
+        ssl_proxy:
+          verify: require
+          check_peer_cn: 'off'
+          check_peer_name: 'off'
+          machine_cert: /opt/certs/toto.crt
+          machine_chain: /opt/certs/ca.cert
+          protocol:
+            - all
+            - -SSLv3
+        state: disabled
+      'content1':
+        documentroot:
+          path: /var/www/content1
+          data:
+            provider: copy
+            source: test/integration/data/site
+      'content2':
+        documentroot:
+          path: /var/www/content2
+          data:
+            provider: copy
+            source: test/integration/data/site
+          user: dummy
+          group: dummy
+          mode: '0777'
+      'content3':
+        documentroot:
+          path: /var/www/content3
+          data:
+            provider: content
+            dest: index.html
+            content: "it works"
+      'content4':
+        documentroot:
+          path: /var/www/content4
+          data:
+            provider: content
+            dest: index.html
+            content: "it works"
+          user: dummy
+          group: dummy
+          mode: '0777'
+      'content5':
+        documentroot:
+          path: /var/www/content5
+          data:
+            provider: git
+            repo    : https://github.com/picocms/Pico.git
+      'content6':
+        documentroot:
+          path: /var/www/content6
+          data:
+            provider: git
+            repo    : https://github.com/picocms/Pico.git
+            version : v1.0.3
+            update  : yes
+#            bare    : yes
+            force   : yes
+            refspec : +refs/pull/*:refs/heads/*

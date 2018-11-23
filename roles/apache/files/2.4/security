@@ -1,0 +1,4 @@
+# Ansible managed
+ServerTokens Prod
+ServerSignature Off
+TraceEnable Off

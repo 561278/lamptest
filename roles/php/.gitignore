@@ -1,0 +1,7 @@
+.DS_Store
+.vagrant
+tests/.vagrant
+.kitchen/
+.kitchen.local.yml
+Gemfile.lock
+.idea/

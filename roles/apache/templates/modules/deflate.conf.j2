@@ -1,0 +1,30 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+<IfModule mod_deflate.c>
+    <IfModule mod_filter.c>
+          {% if apache_modules['deflate'].type is defined -%}
+          {% for type in apache_modules['deflate'].type -%}
+          AddOutputFilterByType   DEFLATE   {{ type }}
+          {% endfor -%}
+          {% else -%}
+          AddOutputFilterByType   DEFLATE   text/html text/plain text/xml
+          AddOutputFilterByType   DEFLATE   text/css
+          AddOutputFilterByType   DEFLATE   application/x-javascript application/javascript application/ecmascript
+          AddOutputFilterByType   DEFLATE   application/rss+xml
+          AddOutputFilterByType   DEFLATE   application/json
+          {% endif -%}
+    </IfModule>
+
+          {% if apache_modules['deflate'].notes is defined -%}
+          {% for note in apache_modules['deflate'].notes -%}
+          DeflateFilterNote       {{ note }}
+          {% endfor -%}
+          {% else -%}
+          DeflateFilterNote       Input     instream
+          DeflateFilterNote       Output    outstream
+          DeflateFilterNote       Ratio     ratio
+          {% endif %}
+
+</IfModule>

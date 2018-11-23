@@ -1,0 +1,29 @@
+{% if item.value.passenger['base_uris'] is defined and apache_version.split('.')[1] == '4' %}
+{% for uri in item.value.passenger['base_uris'] %}
+PassengerBaseURI {{ uri }}
+{% endfor %}
+{% endif %}
+{% if item.value.passenger['app_root'] is defined %}
+PassengerAppRoot {{ item.value.passenger['app_root'] }}
+{% endif %}
+{% if item.value.passenger['app_env'] is defined and apache_version.split('.')[1] == '4' %}
+PassengerAppEnv {{ item.value.passenger['app_env'] }}
+{% endif %}
+{% if item.value.passenger['ruby'] is defined %}
+PassengerRuby {{ item.value.passenger['ruby'] }}
+{% endif %}
+{% if item.value.passenger['min_instances'] is defined %}
+PassengerMinInstances {{ item.value.passenger['min_instances'] }}
+{% endif %}
+{% if item.value.passenger['start_timeout'] is defined and apache_version.split('.')[1] == '4' %}
+PassengerStartTimeout {{ item.value.passenger['start_timeout'] }}
+{% endif %}
+{% if item.value.passenger['pre_start'] is defined %}
+PassengerPreStart {{ item.value.passenger['pre_start'] }}
+{% endif %}
+{% if item.value.passenger['user'] is defined %}
+PassengerUser {{ item.value.passenger['user'] }}
+{% endif %}
+{% if item.value.passenger['group'] is defined %}
+PassengerGroup {{ item.value.passenger['group'] }}
+{% endif %}

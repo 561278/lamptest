@@ -1,0 +1,89 @@
+---
+# tasks file for awh-users
+#pip install passlib
+#python -c "from passlib.hash import sha512_crypt; import getpass; print sha512_crypt.encrypt(getpass.getpass())"
+
+- name: Manage groups
+  group:
+    name            :   "{{ item.group|default(item.name) }}"
+    system          :   '{{ item.system|default(omit) }}'
+    gid             :   '{{ item.gid|default(omit) }}'
+    state           :   '{{ item.state|default("present") }}'
+  with_flattened :
+    - "{{users_system.group|default([])}}"
+    - "{{users_system.user|default([])}}"
+  when           : ((item.name is defined and item.name != 'root'))
+  tags           : users_system_group
+
+- name: User create/modify/delete
+  user:
+    name              :  '{{ item.name }}'
+    group             :  '{{ item.group|default(item.name) }}'
+    groups            :  "{{ item.groups| default([]) | join(',') or omit }}"
+    append            :  '{{ item.append|default("yes")}}'
+    shell             :  '{{ item.shell|default("/bin/bash") }}'
+    uid               :  '{{ item.uid|default(omit) }}'
+    non_unique        :  '{{ item.non_unique|default(omit) }}'
+    state             :  '{{ item.state|default("present") }}'
+    comment           :  '{{ item.comment|default(omit) }}'
+    password          :  '{{ item.password|default("!") }}'
+    update_password   :  '{{ item.update_password|default("on_create") }}'
+    system            :  '{{ item.system|default(omit) }}'
+    home              :  '{{ item.home|default(omit) }}'
+    createhome        :  '{{ item.createhome|default(omit) }}'
+    generate_ssh_key  :  '{{ item.generate_ssh_key|default(omit) }}'
+    ssh_key_file      :  '{{ item.ssh_key_file|default(omit) }}'
+    ssh_key_passphrase:  '{{ item.ssh_key_passphrase|default(omit) }}'
+    ssh_key_type      :  '{{ item.ssh_key_ssh_key_type|default("rsa") }}'
+    ssh_key_bits      :  '{{ item.ssh_key_bits|default(omit) }}'
+    ssh_key_comment   :  '{{ item.ssh_key_comment|default(omit) }}'
+    expires           :  '{{ item.expires|default(omit) }}'
+    move_home         :  '{{ item.move_home|default(omit) }}'
+    remove            :  '{{ item.remove|default(omit) }}'
+  with_items : "{{users_system.user|default([])}}"
+  #no_log: "{{no_log|default(true)}}"
+  when       : ((item.name is defined and item.name != 'root') and (item.state is undefined or (item.state is defined and item.state != 'absent')))
+  tags       : users_system_user
+
+- name: SSH Authorized Keys
+  authorized_key:
+    user              :  "{{ item.name }}"
+    key               :  "{{ '\n'.join(item.authorized_keys) | string }}"
+    state             :  present
+  with_items : "{{users_system.user}}"
+  when       : ((item.name is defined and item.name != 'root') and (item.state is undefined or (item.state is defined and item.state != 'absent')) and item.authorized_keys is defined)
+  tags       : users_authorized_key
+
+- name: Ensure sudoers.d is included in config
+  lineinfile:
+    dest              : /etc/sudoers
+    line              : "#includedir /etc/sudoers.d"
+    state             : present
+    validate          : "/usr/sbin/visudo -cf %s"
+  with_items : "{{users_system.user|default([])}}"
+  when       : item.sudo is defined
+  tags       : users_sudo
+
+- name: Add custom sudoers from dict or custom template
+  template:
+    src               : "{{ item.sudo.template|default('sudoers.j2') }}"
+    dest              : "/etc/sudoers.d/{{ item.name }}"
+    owner             : root
+    group             : root
+    mode              : 0440
+    validate          : "/usr/sbin/visudo -cf %s"
+  with_items : "{{users_system.user|default([])}}"
+  when       : ((item.name is defined and item.name != 'root') and (item.state is undefined or (item.state is defined and item.state != 'absent')) and (item.sudo is defined and item.sudo.content is not defined))
+  tags       : users_sudo
+
+- name: Add custom sudoers from content
+  copy:
+    content           : "{{ item.sudo.content }}"
+    dest              : "/etc/sudoers.d/{{ item.name }}"
+    owner             : root
+    group             : root
+    mode              : 0440
+    validate          : "/usr/sbin/visudo -cf %s"
+  with_items : "{{users_system.user|default([])}}"
+  when       : ((item.name is defined and item.name != 'root') and (item.state is undefined or (item.state is defined and item.state != 'absent')) and (item.sudo is defined and item.sudo.content is defined))
+  tags       : users_sudo

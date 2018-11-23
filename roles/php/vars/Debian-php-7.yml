@@ -1,0 +1,13 @@
+---
+php_conf_dir                 : '/etc/php/{{ php_version_major }}.{{ php_version_minor }}'
+php_apache_conf_dir          : '{{ php_conf_dir }}/apache2'
+php_apache_dest_conf_file    : '{{ php_apache_conf_dir }}/php.ini'
+php_fpm_conf_dir             : '{{ php_conf_dir }}/fpm'
+php_fpm_dest_conf_file       : '{{ php_fpm_conf_dir }}/php.ini'
+php_fpm_pool_dir             : '{{ php_fpm_conf_dir }}/pool.d'
+php_cli_conf_dir             : '{{ php_conf_dir }}/cli'
+php_cli_dest_conf_file       : '{{ php_cli_conf_dir }}/php.ini'
+php_mods_available           : '{{ php_conf_dir }}/mods-available'
+php_prefix                   : 'php{{ php_version_major }}.{{ php_version_minor }}'
+php_fpm_daemon               : 'php{{ php_version_major }}.{{ php_version_minor }}-fpm'
+php_apache_daemon            : 'apache2'

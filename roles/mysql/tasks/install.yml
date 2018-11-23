@@ -1,0 +1,99 @@
+---
+
+- name: Use custom repository.
+  set_fact:
+    mysql_repo: '{{ mysql_custom_repo }}'
+  when: mysql_custom_repo is defined
+
+- name: Unset mysql_repo if OS => Stretch with maraidb 10.1
+  set_fact:
+    mysql_repo: {}
+  when:
+    - ansible_distribution_release == 'stretch'
+    - mysql_version == '10.1'
+
+- name: Adding percona-xtrabackup if cluster is enabled
+  set_fact:
+    mysql_repo: "{{ mysql_repo|combine(mysql_cluster_tools_repository|default({}), recursive=True) }}"
+  when: mysql_cluster_enabled
+
+- name: Ensure APT Key / by keyserver
+  apt_key:
+    keyserver: '{{ item.value.keyserver }}'
+    id       : '{{ item.value.id|default(omit)}}'
+    state    : '{{ item.value.state|default(omit)}}'
+  with_dict  : '{{mysql_repo}}'
+  when      : item.value.url is defined and item.value.keyserver is defined
+
+- name: Ensure APT Key / by url
+  apt_key:
+    url     : '{{ item.value.key }}'
+    id      : '{{ item.value.id|default(omit)}}'
+    state   : '{{ item.value.state|default(omit)}}'
+  with_dict : '{{ mysql_repo }}'
+  when      : item.value.url is defined and item.value.key is defined
+
+- name: Add APT Repository
+  apt_repository:
+    repo        : 'deb {{ item.value.url }} {{ item.value.distribution|default(ansible_distribution_release) }} {{ item.value.section|default("all") }}'
+    state       : '{{ item.value.state|default(omit)}}'
+  with_dict     : '{{mysql_repo}}'
+  when          : item.value.url is defined
+  register      : mysql_add_apt
+
+- name: Set APT Pinning
+  template:
+    src     : 'mysql-apt-pinning.j2'
+    dest    : '/etc/apt/preferences.d/mysql{{ item.key }}.pref'
+    owner   : root
+    group   : root
+    mode    : 0444
+  with_dict : '{{mysql_repo}}'
+  when      : item.value.pin is defined and item.value.pin_packages is defined and item.value.pin_priority is defined
+
+- name: Update APT Cache
+  apt:
+    update_cache: yes
+  when: mysql_add_apt.changed
+
+- name: Create mysql group
+  group:
+    name  : '{{ mysql_group }}'
+    system: yes
+
+## FIX ME
+- name: Create mysql system user
+  user:
+    name: '{{ mysql_user }}'
+    group: '{{ mysql_group }}'
+    system: yes
+    shell: '/bin/false'
+    home: '/nonexistent'
+    createhome: no
+
+- name: Ensure mysql directory perms
+  file:
+    path : '{{ mysql_datadir }}'
+    mode : '0700'
+    owner: '{{ mysql_user }}'
+    group: '{{ mysql_group }}'
+    state: directory
+
+- name: Set DEBCONF MySQL silent installation
+  debconf:
+    name    : "{{ mysql_debconf['name'] }}"
+    question: "{{ item }}"
+    vtype   : 'password'
+    value   : "{{ mysql_root_password|quote }}"
+  when: mysql_installation or mysql_reinstall
+  with_items: "{{ mysql_debconf['question'] }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Install packages.
+  apt:
+    name : "{{ item }}"
+    state: present
+  with_items: '{{ mysql_cluster_packages if mysql_cluster_enabled else mysql_packages }}'
+  loop_control:
+    label: "{{ item }}"

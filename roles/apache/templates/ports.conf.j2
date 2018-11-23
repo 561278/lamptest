@@ -1,0 +1,10 @@
+{% for ban_line in apache_ansible_managed %}
+{{ ban_line }}
+{% endfor %}
+
+{% for bind in apache_bind %}
+{% if apache_version.split('.')[1] == '2' -%}
+NameVirtualHost {{ bind }}
+{% endif %}
+Listen {{ bind }}
+{% endfor %}

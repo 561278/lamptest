@@ -1,0 +1,89 @@
+---
+- name: Install apache modules
+  apt:
+    name            : "{{ apache_modules_packages[item.key] }}"
+    state           : present
+  with_dict: "{{ apache_modules }}"
+  when: "item.key not in apache_embeded_modules"
+  notify : restart apache
+
+- name: Clean-up default modules files
+  file:
+    path: '{{ item }}'
+    state: absent
+  with_items:
+   - '{{ apache_mod_enable_dir }}/mpm_event.load'
+   - '{{ apache_mod_enable_dir }}/mpm_event.conf'
+   - '{{ apache_mod_enable_dir }}/mpm_prefork.load'
+   - '{{ apache_mod_enable_dir }}/mpm_prefork.conf'
+   - '{{ apache_mod_enable_dir }}/mpm_worker.load'
+   - '{{ apache_mod_enable_dir }}/mpm_worker.conf'
+
+- name: Activate default modules
+  file:
+    src  : "{{ apache_mod_dir_relative }}/{{ item }}.load"
+    dest : "{{ apache_mod_enable_dir }}/{{ item }}.load"
+    state: link
+    owner: root
+    group: root
+    mode : "{{ apache_file_mode_symlink }}"
+  with_items: "{{ apache_default_enabled_modules }}"
+  notify : restart apache
+
+- name: Push modules configuration
+  template:
+    src  : modules/{{ item.key }}.conf.j2
+    dest : "{{ apache_mod_dir }}/{{ item.key }}.conf"
+    owner: root
+    group: root
+    mode : "{{ apache_file_mode }}"
+  with_dict: "{{ apache_modules }}"
+  when: "item.key not in ( apache_mod_no_template_default +  apache_mod_no_template )"
+  notify : restart apache
+
+- name: Activate/Deactivate modules configuration
+  file:
+    src  : '{% if item.value.module_state is defined and item.value.module_state == "disabled" %}omit{% else %}{{ apache_mod_dir_relative }}/{{ item.key }}.conf{% endif %}'
+    dest : "{{apache_mod_enable_dir}}/{{ item.key }}.conf"
+    state: '{% if item.value.module_state is defined and item.value.module_state == "disabled" %}absent{% else %}link{% endif %}'
+    owner: root
+    group: root
+    mode : "{{ apache_file_mode_symlink }}"
+  with_dict: "{{ apache_modules }}"
+  when: "item.key not in ( apache_mod_no_template_default +  apache_mod_no_template )"
+  notify : restart apache
+
+- name: Push modules custom load file
+  template:
+    src  : modules/load.j2
+    dest : "{{ apache_mod_dir }}/{{ item.key }}.load"
+    owner: root
+    group: root
+    mode : "{{ apache_file_mode }}"
+  with_dict: "{{ apache_modules }}"
+  when: item.value.loadfiles is defined
+  notify : restart apache
+
+- name: Activate/Deactivate load configuration
+  file:
+    src  : '{% if item.value.module_state is defined and item.value.module_state == "disabled" %}omit{% else %}{{ apache_mod_dir_relative }}/{{ item.key }}.load{% endif %}'
+    dest : "{{ apache_mod_enable_dir }}/{{ item.key }}.load"
+    state: '{% if item.value.module_state is defined and item.value.module_state == "disabled" %}absent{% else %}link{% endif %}'
+    owner: root
+    group: root
+    mode : "{{ apache_file_mode_symlink }}"
+  with_dict: "{{ apache_modules }}"
+  register: _load
+  failed_when: "_load|failed and 'src file does not exist' not in _load.msg"
+  notify : restart apache
+
+- name: Activate worker if using itk
+  file:
+    src  : '{{ apache_mod_dir_relative }}/prefork.load'
+    dest : "{{ apache_mod_enable_dir }}/prefork.load"
+    state: 'link'
+    owner: root
+    group: root
+    mode : "{{ apache_file_mode_symlink }}"
+  when: apache_mpm == 'itk' and ( apache_version | version_compare('2.4', '>=') )
+  notify : restart apache

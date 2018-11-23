@@ -1,0 +1,7 @@
+{% for jk in item.value.jk %}
+{% if 'mount' in jk and 'worker' in jk %}
+JkMount   {{ jk['mount'] }} {{ jk['worker'] }}
+{% elif 'unmount' in jk and 'worker' in jk %}
+JkUnMount {{ jk['unmount'] }} {{ jk['worker'] }}
+{% endif %}
+{% endfor %}

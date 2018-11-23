@@ -1,0 +1,14 @@
+<Location {{ apache_modules['info'].path|default("/server-info") }}>
+          SetHandler server-info
+          {% if apache_version.split('.')[1] == '4' -%}
+          Require ip 127.0.0.1 ::1 {{ apache_modules['info'].allow_from|default('')|join(" ") }}
+          {% else -%}
+          Order deny,allow
+          Deny from all
+          Allow from 127.0.0.1 ::1 {{ apache_modules['info'].allow_from|default('')|join(" ") }}
+          {% endif -%}
+          {% if apache_modules['info'].raw is defined -%}
+          {{ apache_modules['info'].raw }}
+          {% endif %}
+          
+</Location>

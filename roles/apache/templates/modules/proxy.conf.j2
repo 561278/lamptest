@@ -1,0 +1,28 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+<IfModule mod_proxy.c>
+  # Do not enable proxying with ProxyRequests until you have secured your
+  # server.  Open proxy servers are dangerous both to your network and to the
+  # Internet at large.
+
+  ProxyRequests {{ apache_modules['proxy'].requests|default('Off') }}
+
+  {% if (apache_modules['proxy'].requests is defined and apache_modules['proxy'].requests != 'Off') or (apache_modules['proxy'].allow_from is defined) %}
+  <Proxy *>
+    {% if apache_version.split('.')[1] == '4' -%}
+    Require ip {{ apache_modules['proxy'].allow_from|default(['127.0.0.1'])|join(" ") }}
+    {% else %}
+    Order deny,allow
+    Deny from all
+    Allow from {{ apache_modules['proxy'].allow_from|default(['127.0.0.1'])|join(" ") }}
+    {% endif %}
+  </Proxy>
+  {% endif %}
+
+  # Enable/disable the handling of HTTP/1.1 "Via:" headers.
+  # ("Full" adds the server version; "Block" removes all outgoing Via: headers)
+  # Set to one of: Off | On | Full | Block
+  ProxyVia On
+</IfModule>

@@ -1,0 +1,12 @@
+---
+mysql_repo:
+  'mysql':
+    url          : 'http://repo.mysql.com/apt/{{ansible_distribution|lower}}'
+    distribution : '{{ ansible_distribution_release }}'
+    section      : 'mysql-{{mysql_version}}'
+    state        : 'present'
+    keyserver    : 'keys.gnupg.net'
+    id           : '8C718D3B5072E1F5'
+    pin          : 'version {{mysql_version}}.*'
+    pin_packages : 'mysql-*'
+    pin_priority : 990

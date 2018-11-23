@@ -1,0 +1,29 @@
+---
+- name: Install dependencies.
+  apt:
+    name: "{{ item }}"
+    update_cache: "{{ update_cache|default('no') }}"
+  with_items:
+    - python-mysqldb
+    - "{{ 'software-properties-common' if (ansible_distribution == 'Debian' and ansible_distribution_major_version|int == 9) else 'python-software-properties' }}"
+
+- name: Check if a mysql server is already installed 1/2
+  stat:
+    path: /etc/init.d/mysql
+  register: mysql_init
+  changed_when: False
+
+- name: Set mysql_installation to wanted value 2/2
+  set_fact:
+    mysql_installation: true
+  when:
+    - not mysql_init.stat.exists
+    - not mysql_reinstall
+
+- name: Remove lost+found directory
+  file:
+    path: "{{ mysql_datadir }}/lost+found"
+    state: absent
+  when:
+    - mysql_remove_lostfound 
+    - mysql_installation or mysql_reinstall

@@ -1,0 +1,25 @@
+{% for ban_line in apache_ansible_managed %}
+{{ ban_line }}
+{% endfor %}
+
+# Header field parsed for useragent IP addresses
+RemoteIPHeader        {{ apache_modules['remoteip'].header|default('X-Forwarded-For') }}
+
+{% if apache_modules['remoteip'].proxy_ips is defined %}
+{% for proxy in apache_modules['remoteip'].proxy_ips %}
+RemoteIPInternalProxy {{ proxy }}
+{% endfor %}
+{% else %}
+RemoteIPInternalProxy 127.0.0.1
+{% endif %}
+
+{% if apache_modules['remoteip'].proxies_header is defined %}
+# Header field recorded for all intermediate IP addresses
+RemoteIPProxiesHeader {{ apache_modules['remoteip'].proxies_header }}
+{% endif %}
+
+{% if apache_modules['remoteip'].trusted_proxy_ip is defined %}
+{% for proxy in  apache_modules['remoteip'].trusted_proxy_ip %}
+RemoteIPTrustedProxy  {{ proxy }}
+{% endfor %}
+{% endif %}

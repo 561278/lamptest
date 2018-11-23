@@ -1,0 +1,15 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+# Enable reverse proxy add forward
+RPAFenable On
+{% if apache_modules['rpaf'].sethostname is defined and not apache_modules['rpaf'].sethostname -%}
+RPAFsethostname Off
+{% else -%}
+RPAFsethostname On
+{% endif -%}
+# Which IPs are forwarding requests to us
+RPAFproxy_ips    {{ apache_modules['rpaf'].proxy_ips|default(['127.0.0.1'])|join(" ") }}
+# Header field parsed.
+RPAFheader      {{ apache_modules['rpaf'].header|default('X-Forwarded-For') }}

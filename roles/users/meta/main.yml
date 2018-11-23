@@ -1,0 +1,20 @@
+galaxy_info:
+  author:
+    - Abdoul Bah
+    - Stéphane Pecourt
+  license: GPLv3
+  min_ansible_version: 2.1
+  platforms:
+    - name: Debian
+      versions:
+        - wheezy
+        - jessie
+    - name: Ubuntu
+      versions:
+        - trusty
+        - xenial
+  categories:
+    - system
+    - database
+    - nosql
+dependencies: []

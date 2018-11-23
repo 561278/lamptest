@@ -1,0 +1,20 @@
+{% if item.value.php_flags is defined %}
+{% for flag,value in item.value.php_flags.iteritems() %}
+php_flag {{ flag }} {{ value }}
+{% endfor %}
+{% endif %}
+{% if item.value.php_values is defined %}
+{% for key,value in item.value.php_values.iteritems() %}
+php_value {{ key }} "{{ value }}"
+{% endfor %}
+{% endif %}
+{% if item.value.php_admin_flags is defined %}
+{% for flag,value in item.value.php_admin_flags.iteritems() %}
+php_admin_flag {{ flag }} {{ value }}
+{% endfor %}
+{% endif %}
+{% if item.value.php_admin_values is defined %}
+{% for key,value in item.value.php_admin_values.iteritems() %}
+php_admin_value {{ key }} "{{ value }}"
+{% endfor %}
+{% endif %}

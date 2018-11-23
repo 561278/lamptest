@@ -1,0 +1,19 @@
+SetEnvIf Remote_Addr 127.0.0.1 DEBUG
+{% if item.value['setid'] is defined and item.value['setid'].allow_from is defined %}
+{% for ip in item.value['setid'].allow_from %}
+SetEnvIf Remote_Addr {{ ip }} DEBUG
+{% endfor %}
+{% endif %}
+{% if apache_granted_ip is defined %}
+{% for ip in apache_granted_ip %}
+SetEnvIf Remote_Addr {{ ip }} DEBUG
+{% endfor %}
+{% endif %}
+<IfModule mod_headers.c>
+     {% if item.value['setid'] is defined -%}
+     Header set X-Vhost-ID "{{ item.value.servername|default(item.key) }} {% if item.value['setid'].filename is defined and item.value['setid'].filename %}from {% if item.value.priority is defined %}{{apache_vhost_enable_dir}}/{{ item.value.priority }}-{{ item.key }}.conf{% else %}{{ apache_vhost_enable_dir }}/{{ item.key }}.conf{% endif %}{% endif %}" env=DEBUG
+     {% else -%}
+     Header set X-Vhost-ID "{{ item.value.servername|default(item.key) }}" env=DEBUG
+     {% endif %}
+
+</IfModule>

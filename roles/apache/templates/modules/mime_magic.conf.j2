@@ -1,0 +1,8 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+{% set magic_file = apache_conf_dir + '/' + 'magic' %}
+<IfModule mod_mime_magic.c>
+          MIMEMagicFile "{{ apache_modules['mime_magic'].file|default(magic_file) }}"
+</IfModule>

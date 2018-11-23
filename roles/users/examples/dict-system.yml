@@ -1,0 +1,45 @@
+---
+# Exemple de dictionnaires de données system
+users_system:
+  group:
+    - name: awh
+      state: present
+      system: no
+      gid: 1005
+    - name: deploy
+      state: present
+    - name: devops
+      state: present
+    - name: combo
+      state: present
+    - name: fatality
+    - name: raptor
+    - name: cortex
+  user:
+    - name: helldorado
+      group: helldorado
+      groups:
+        - awh
+        - deploy
+        - cortex
+      append: yes
+      uid: 1300
+      comment: 'Compte Admin'
+      password: '$6$rounds=656000$JF8tFeeiJD50ELTt$Y1xrYwo8/XlfEu1gzwtvcLubehyAEtv5aLOwPff9TUABwkL.0UbPJLKebyBYy3ScuB0f/U6Gd/b.tgSL8Fr4Y0'
+      home: '/home/hell'
+      createhome: yes
+      generate_ssh_key: yes
+      ssh_key_passphrase: 'Si Java avait un vrai garbage collector (collecteur de dechets, ndt), la plupart des programmes se supprimeraient eux-memes lors de l execution'
+      authorized_keys:
+        - 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCw/7e44AMATsCIqCdQaehYc84L+DYOZMA29pJ9JQLPGdMrfr0rQKAGsWp7uLSKIHlZYQx40XAjo5oW2ge6pvizaOaOK3sn4ddfI0n1kTyfV2lNYrbxHjtcUL0QOQxxL/7HL8m5JyLCekDg3XiiwoBTyNC9gSyMbPKoFy+nlJpjxpju5AOBxM5xOiEzfzJsULHyuFP+ZxQ9GwvLOuXGg9BotYA/jPJFTGG95t4HK+SvJ1CMHpamFJr4OXVxtSTRbMhvlP3Zd+3pwGr8pZc/JhYP5mrBxQ/QwHc/pzeYJv62ocuOXv70+hDn453Bml4FcKz2yrZBAYWkydkIU511k/3N helldorado@spynol.local
+            '
+        - 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDPE3Jk66nKUMp0m0mgEpougo/qCUrW+ZDQHb8w+2QQiw/t5xJk0uhnkT1TPcNk+5Mdmjx264gHh/nAk0XgG1jhsSKlPzkgAcyBNw89tLKESkMvh2DlYzmvqG5b/YiQ8BPPBB+2ghxpoUixDPaJQS7Mr/BgkAWXN28oLNsFkhY1gCdWUHDH1XhXQsRYsZtw0TbAz/j+oOu233Hq/J9UB9w2UuGLr9z1cQY516vBSblrpfNjDWfmwLHENoeqZTsqFiivgYjMVc2RjLwgLM1ORJopfay0Gj7q9xz9hidUwqyyL7OkIK/FYA32JmT4REYr7d0uEwTm0zAfWG+ab4rKWNnB helldorado@spynol.local
+            '
+      sudo:
+        nopasswd: yes
+        requiretty: yes
+        user: ALL
+        commands:
+          - '/etc/init.d/apache2'
+          - '/usr/bin/vim /usr/share/tomcat5/*'
+          - '/usr/sbin/apache2ctl'

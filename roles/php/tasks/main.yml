@@ -1,0 +1,51 @@
+---
+- name: 'Include Assert'
+  include: "asserts.yml"
+  tags:
+    - php
+    - php_install
+    - php_configure
+    - php_sites
+
+- name: 'Include OS-specific variables'
+  include_vars: "{{ item }}"
+  with_first_found:
+    - '{{ ansible_os_family}}-php-{{ php_version_major }}.{{ php_version_minor }}.yml'
+    - '{{ ansible_os_family}}-php-{{ php_version_major }}.yml'
+    - '{{ ansible_os_family}}.yml'
+  tags:
+    - php
+    - php_install
+    - php_configure
+    - php_sites
+
+- name: 'Select php repository'
+  include_vars: "{{ item }}"
+  with_first_found:
+   - 'repository/php-{{ php_version_major }}.{{ php_version_minor }}-{{ansible_lsb.codename}}.yml'
+   - 'repository/php-{{ php_version_major }}-{{ansible_lsb.codename}}.yml'
+   - 'repository/none.yml'
+  when: (php_repo|length <= 0)
+  tags:
+    - php
+    - php_install
+    - php_configure
+    - php_sites
+
+- name: 'Include OS Install tasks'
+  include: '{{ansible_os_family|lower}}.yml'
+  tags:
+    - php
+    - php_install
+
+- name: 'Include configuration tasks'
+  include: 'configure.yml'
+  tags:
+    - php
+    - php_configure
+
+- name: 'Include sites configuraton'
+  include: sites.yml
+  tags:
+    - php
+    - php_sites

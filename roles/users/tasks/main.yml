@@ -1,0 +1,37 @@
+---
+# tasks file for awh-users
+
+- name: Ensure sudo package and python module for db management is installed
+  include: install.yml
+  when: users_install_requires
+  tags:
+    - users
+    - users_install
+
+- name: Manage System Users
+  include: system.yml
+  when: users_system is defined and users_system|length > 0
+  tags:
+    - users
+    - users_system
+
+- name: Manage Mysql Users
+  include: mysql.yml
+  when: users_mysql is defined and users_mysql|length > 0
+  tags:
+    - users
+    - users_mysql
+
+- name: Manage Postgresql Users
+  include: postgresql.yml
+  when: users_postgresql is defined and users_postgresql|length > 0
+  tags:
+    - users
+    - users_postgresql
+
+- name: Manage MongoDB Users
+  include: mongodb.yml
+  when: users_mongodb is defined and users_mongodb|length > 0
+  tags:
+    - users
+    - users_mongodb

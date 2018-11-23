@@ -1,0 +1,109 @@
+; {{ ansible_managed }}
+
+[{{ item.name }}]
+
+{% if item.prefix is defined %}
+prefix                       = {{ item.prefix }}
+{% endif -%}
+
+user                         = {{ item.user|default(php_fpm_default.user) }}
+group                        = {{ item.group|default(item.user|default(php_fpm_default.user)) }}
+
+{### Listen configuration#}
+{% if item.listen_tcp is undefined %}
+listen                       = {{ item.listen_socket|default( php_fpm_default.sockdir +'/php-' + item.name + '.sock') }}
+listen.owner                 = {{ item.listen_owner|default(php_fpm_default.listen_owner) }}
+listen.group                 = {{ item.listen_group|default(item.listen_owner|default(php_fpm_default.listen_owner)) }}
+listen.mode                  = {{ item.listen_mode|default(php_fpm_default.listen_mode) }}
+{% elif item.listen_tcp is defined %}
+listen                       = {{ item.listen_tcp|default("127.0.0.1:9000") }}
+listen.allowed_clients       = {{ item.listen_allowed_clients|default("127.0.0.1") }}
+{% endif %}
+{% if item.listen_backlog is defined %}
+listen.backlog               = {{ item.listen_backlog }}
+{% endif %}
+
+{### Process Management#}
+pm                           = {{ item.pm|default(php_fpm_default.pm) }}
+{% if (item.pm|default(php_fpm_default.pm)) == "static" %}
+{% elif (item.pm|default(php_fpm_default.pm)) == "ondemand" %}
+pm.process_idle_timeout      = {{ item.pm_process_idle_timeout|default(php_fpm_default.process_idle_timeout) }}
+{% else -%} {# dynamic #}
+pm.start_servers             = {{ item.pm_start_servers|default(php_fpm_default.pm_start_servers) }}
+pm.min_spare_servers         = {{ item.pm_min_spare_servers|default(php_fpm_default.pm_min_spare_servers) }}
+pm.max_spare_servers         = {{ item.pm_max_spare_servers|default(php_fpm_default.pm_max_spare_servers) }}
+{% endif %}
+pm.max_children              = {{ item.pm_max_children|default(php_fpm_default.pm_max_children) }}
+
+{### Avoid memory leaks in 3rd party libraries#}
+pm.max_requests              = {{ item.pm_max_requests|default(php_fpm_default.pm_max_requests) }}
+
+{### Health check#}
+pm.status_path               = {{ item.pm_status_path|default(php_fpm_default.pm_status_path) }}
+ping.path                    = {{ item.ping_path|default(php_fpm_default.ping_path) }}
+ping.response                = {{ item.ping_response|default(php_fpm_default.ping_response) }}
+
+{### Logging#}
+request_slowlog_timeout = {{ item.request_slowlog_timeout|default(php_fpm_default.request_slowlog_timeout) }}
+{% if item.slowlog is defined %}
+slowlog                      = {{ item.slowlog }}
+{% endif %}
+
+{### System#}
+request_terminate_timeout    = {{ item.request_terminate_timeout|default(php_fpm_default.request_terminate_timeout) }}
+{% if item.rlimit_files is defined %}
+rlimit_files                 = {{ item.rlimit_files }}
+{% endif %}
+{% if item.rlimit_core is defined %}
+rlimit_core                  = {{ item.rlimit_core }}
+{% endif %}
+{% if item.chroot is defined %}
+chroot                       = {{ item.chroot }}
+{% endif %}
+{% if item.chdir is defined %}
+chdir                        = {{ item.chdir }}
+{% endif %}
+catch_workers_output         = {{ item.catch_workers_output|default(php_fpm_default.catch_workers_output) }}
+{% if  php_version_major|int == 5 and 
+      ((php_version_minor|int >= 4 and php_version_revision|int >= 27) or
+      ( php_version_minor|int >= 5 and php_version_revision|int >= 11) or
+      ( php_version_minor|int >= 6 and php_version_revision|int >= 0)) and
+      item.clear_env is defined 
+%}
+clear_env                    = {{ item.clear_env|string }}
+{% endif %}
+{% if item.security_limit_extensions is defined %}
+security.limit_extensions    = {{ item.security_limit_extensions }}
+{% endif %}
+
+{% if item.php_flag is defined or item.php_admin_flag is defined or item.php_value is defined or item.php_admin_value is defined %}
+;; PHP FLAGS and VALUE
+{% if item.php_flag is defined %}
+{% for (key, value) in item.php_flag.iteritems() %}
+php_flag[{{ key }}]          = {{ value }}
+{% endfor %}
+{% endif %}
+{% if item.php_admin_flag is defined %}
+{% for (key, value) in item.php_admin_flag.iteritems() %}
+php_admin_flag[{{ key }}]    = {{ value }}
+{% endfor %}
+{% endif %}
+{% if item.php_value is defined %}
+{% for (key, value) in item.php_value.iteritems() %}
+php_value[{{ key }}]         = {{ value }}
+{% endfor %}
+{% endif %}
+{% if item.php_admin_value is defined %}
+{% for (key, value) in item.php_admin_value.iteritems() %}
+php_admin_value[{{ key }}]   = {{ value }}
+{% endfor %}
+{% endif %}
+{% endif %}
+
+{% if item.env is defined %}
+{### ENVIRONMENT#}
+{% for (key, value) in item.env.iteritems() %}
+env[{{ key }}]  = {{ value }}
+{% endfor %}
+{% endif %}
+

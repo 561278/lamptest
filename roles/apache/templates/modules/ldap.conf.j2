@@ -1,0 +1,33 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+<Location /ldap-status>
+    SetHandler ldap-status
+    {% if apache_version.split('.')[1] == '4' -%}
+    Require ip 127.0.0.1 ::1
+    {% else -%}
+    Order deny,allow
+    Deny from all
+    Allow from 127.0.0.1 ::1
+    Satisfy all
+    {% endif %}
+</Location>
+{% if apache_modules['ldap'].trusted_global_cert_file is defined -%}
+LDAPTrustedGlobalCert {{ apache_modules['ldap'].trusted_global_cert_type|default('CA_BASE64') }} {{ apache_modules['ldap'].trusted_global_cert_file }}
+{% endif -%}
+{% if apache_modules['ldap'].shared_cache_size is defined -%}
+LDAPSharedCacheSize {{ apache_modules['ldap'].shared_cache_size }}
+{% endif -%}
+{% if apache_modules['ldap'].cache_entries is defined -%}
+LDAPCacheEntries {{ apache_modules['ldap'].cache_entries }}
+{% endif -%}
+{% if apache_modules['ldap'].cache_ttl is defined -%}
+LDAPCacheTTL {{ apache_modules['ldap'].cache_ttl }}
+{% endif -%}
+{% if apache_modules['ldap'].opcache_entries is defined -%}
+LDAPOpCacheEntries {{ apache_modules['ldap'].opcache_entries }}
+{% endif -%}
+{%- if apache_modules['ldap'].opcache_ttl is defined -%}
+LDAPOpCacheTTL {{ apache_modules['ldap'].opcache_ttl }}
+{% endif -%}

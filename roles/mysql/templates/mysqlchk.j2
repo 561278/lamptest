@@ -1,0 +1,18 @@
+# {{ ansible_managed }}
+#
+# default: on
+# description: mysqlchk
+service mysqlchk
+{
+    disable = no
+    flags           = REUSE
+    socket_type     = stream
+    port            = {{ mysql_cluster_xinetd_port }}
+    wait            = no
+    user            = nobody
+    server          = /usr/local/bin/clustercheck
+    server_args     = {{ mysql_cluster_user}} {{ mysql_cluster_password }}
+    log_on_failure  += USERID
+    only_from       = {{ mysql_cluster_xinetd_network }} 127.0.0.1
+    per_source      = UNLIMITED
+}

@@ -1,0 +1,209 @@
+---
+stages:
+- standalone
+- custom
+- replication
+- cluster
+
+before_script:
+  - bundle install > /dev/null
+
+after_script:
+  - kitchen destroy > /dev/null
+
+
+percona56-debian-stretch-23:
+  stage: standalone
+  script:
+    - kitchen test percona56-debian-stretch-23
+  except:
+    - tags
+
+percona56cluster-debian-wheezy-23:
+  stage: cluster
+  script:
+    - kitchen test percona56cluster-debian-wheezy-23
+  except:
+    - tags
+
+percona56cluster-debian-jessie-23:
+  stage: cluster
+  script:
+    - kitchen test percona56cluster-debian-jessie-23
+  except:
+    - tags
+
+percona56cluster-ubuntu-trusty-23:
+  stage: cluster
+  script:
+    - kitchen test percona56cluster-ubuntu-trusty-23
+  except:
+    - tags
+
+percona57-ubuntu-trusty-23:
+  stage: standalone
+  script:
+    - kitchen test percona57-ubuntu-trusty-23
+  except:
+    - tags
+
+percona57replication-debian-jessie-23:
+  stage: replication
+  script:
+    - kitchen test percona57replication-debian-jessie-23
+  except:
+    - tags
+
+percona57replication-debian-stretch-23:
+  stage: replication
+  script:
+    - kitchen test percona57replication-debian-stretch-23
+  except:
+    - tags
+
+oracle55-debian-wheezy-23:
+  stage: standalone
+  script:
+    - kitchen test oracle55-debian-wheezy-23
+  except:
+    - tags
+
+oracle55-debian-jessie-23:
+  stage: standalone
+  script:
+    - kitchen test oracle55-debian-jessie-23
+  except:
+    - tags
+
+oracle56-debian-wheezy-23:
+  stage: standalone
+  script:
+    - kitchen test oracle56-debian-wheezy-23
+  except:
+    - tags
+
+oracle56-debian-jessie-23:
+  stage: standalone
+  script:
+    - kitchen test oracle56-debian-jessie-23
+  except:
+    - tags
+
+oracle56-ubuntu-trusty-23:
+  stage: standalone
+  script:
+    - kitchen test oracle56-ubuntu-trusty-23
+  except:
+    - tags
+
+oracle57-debian-wheezy-23:
+  stage: standalone
+  script:
+    - kitchen test oracle57-debian-wheezy-23
+  except:
+    - tags
+
+oracle57-ubuntu-trusty-23:
+  stage: standalone
+  script:
+    - kitchen test oracle57-ubuntu-trusty-23
+  except:
+    - tags
+
+oracle57replication-debian-jessie-23:
+  stage: replication
+  script:
+    - kitchen test oracle57replication-debian-jessie-23
+  except:
+    - tags
+
+oracle57replication-debian-stretch-23:
+  stage: replication
+  script:
+    - kitchen test oracle57replication-debian-stretch-23
+  except:
+    - tags
+
+maria100-debian-wheezy-23:
+  stage: standalone
+  script:
+    - kitchen test maria100-debian-wheezy-23
+  except:
+    - tags
+
+maria100-debian-jessie-23:
+  stage: standalone
+  script:
+    - kitchen test maria101-debian-jessie-23
+  except:
+    - tags
+
+maria100-ubuntu-trusty-23:
+  stage: standalone
+  script:
+    - kitchen test maria100-ubuntu-trusty-23
+  except:
+    - tags
+
+maria101replication-debian-jessie-23:
+  stage: replication
+  script:
+    - kitchen test maria101replication-debian-jessie-23
+  except:
+    - tags
+
+maria101replication-debian-stretch-23:
+  stage: replication
+  script:
+    - kitchen test maria101replication-debian-stretch-23
+  except:
+    - tags
+
+maria101cluster-debian-jessie-23:
+  stage: cluster
+  script:
+    - kitchen test maria101cluster-debian-jessie-23
+  except:
+    - tags
+
+maria101cluster-debian-stretch-23:
+  stage: cluster
+  script:
+    - kitchen test maria101cluster-debian-stretch-23
+  except:
+    - tags
+
+maria102replication-debian-jessie-23:
+  stage: replication
+  script:
+    - kitchen test maria102replication-debian-jessie-23
+  except:
+    - tags
+
+maria102replication-debian-stretch-23:
+  stage: replication
+  script:
+    - kitchen test maria102replication-debian-stretch-23
+  except:
+    - tags
+
+maria102cluster-debian-jessie-23:
+  stage: cluster
+  script:
+    - kitchen test maria102cluster-debian-jessie-23
+  except:
+    - tags
+
+maria102cluster-debian-stretch-23:
+  stage: cluster
+  script:
+    - kitchen test maria102cluster-debian-stretch-23
+  except:
+    - tags
+
+maria102custom-debian-stretch-23:
+  stage: custom
+  script:
+    - kitchen test maria102custom-debian-stretch-23
+  except:
+    - tags

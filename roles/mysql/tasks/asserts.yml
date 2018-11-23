@@ -1,0 +1,86 @@
+---
+- name: validate provider
+  assert:
+    that:
+      - "mysql_provider|string in ['oracle','percona','mariadb']"
+
+
+- name: validate mysql version {{mysql_version}} is available - percona
+  assert:
+    that:
+      - "mysql_version|string in ['5.5','5.6','5.7']"
+  when: mysql_custom_repo is undefined and mysql_provider == 'percona'
+
+- name: validate mysql version {{mysql_version}} is available - oracle
+  assert:
+    that:
+      - "mysql_version|string in ['5.5','5.6','5.7']"
+  when: mysql_custom_repo is undefined and mysql_provider == 'oracle'
+
+- name: validate mysql version {{mysql_version}} is available - mariadb
+  assert:
+    that:
+      - "mysql_version|string in ['5.5','10.0','10.1','10.2']"
+  when: mysql_custom_repo is undefined and mysql_provider == 'mariadb'
+
+
+- name: validate mysql version whith OS Major version {{mysql_version}} is available - mariadb
+  assert:
+    that:
+      - "mysql_version|string not in ['5.5']"
+    msg: "mariadb 5.5 is not available for Debian Stretch and Jessie. Instead use 10.0, 10.1 or 10.2"
+  when:
+    - mysql_provider == 'mariadb'
+    - ansible_distribution_major_version|int >= 8
+
+- name: validate mysql version whith OS Major version => 9 [Stretch] {{mysql_version}} is available - mariadb
+  assert:
+    that:
+      - "mysql_version|string not in ['10.0']"
+    msg: "mariadb 10.0 is not available for Stretch. Instead use 10.1 or 10.2"
+  when:
+    - mysql_provider == 'mariadb'
+    - ansible_distribution_major_version|int == 9
+
+
+- name: validate mysql_replication_role is defined
+  assert:
+    that:
+      - "mysql_replication_role is defined"
+      - "mysql_replication_role in ['master','slave']"
+  when: mysql_replication
+
+- name: validate mysql_replication_master is defined and exist in inventory
+  assert:
+    that:
+      - "mysql_replication_master is defined"
+      - "'{{mysql_replication_master}}' in groups['all']"
+  when: mysql_replication and mysql_replication_role == 'slave'
+
+- name: validate mysql_replication_slaveof is undefined when mysql_replication_role is slave
+  assert:
+    that:
+      - "mysql_replication_slaveof is not defined"
+  when: mysql_replication and mysql_replication_role == 'slave'
+
+- name: validate clustering
+  assert:
+    that:
+      - "mysql_cluster_user is defined"
+      - "mysql_cluster_password is defined"
+      - "mysql_wsrep_sst_method in ['xtrabackup','xtrabackup-v2','rsync']"
+      - "mysql_wsrep_cluster_members is defined"
+      - "mysql_provider|string in ['percona','mariadb']"
+  when: mysql_custom_repo is undefined  and mysql_cluster_enabled
+
+- name: validate clustering version {{mysql_version}} is available - percona
+  assert:
+    that:
+      - "mysql_version in ['5.6', '5.7']"
+  when: mysql_custom_repo is undefined and mysql_provider|string == 'percona' and mysql_cluster_enabled
+
+- name: validate clustering version {{mysql_version}} is available - mariadb
+  assert:
+    that:
+      - "mysql_version in ['10.0', '10.1' , '10.2']"
+  when: mysql_custom_repo is undefined and mysql_provider|string == 'mariadb' and mysql_cluster_enabled

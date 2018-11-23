@@ -1,0 +1,5 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+DirectoryIndex {{ apache_modules['dir'].indexes|default(['index.html', 'index.cgi', 'index.pl', 'index.php', 'index.xhtml', 'index.htm'])|join(' ') }}

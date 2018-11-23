@@ -1,0 +1,8 @@
+{% for redirect in item.value.redirect %}
+{% if redirect['source'] is defined and redirect['source'] != '' %}
+Redirect {{ redirect['status']|default('') }} "{{ redirect['source'] }}" "{{ redirect['destination'] }}"
+{% endif %}
+{% if redirect['source_match'] is defined and redirect['source_match'] != '' %}
+RedirectMatch {{ redirect['status']|default('') }} "{{ redirect['source_match'] }}" "{{ redirect['destination'] }}"
+{% endif %}
+{% endfor %}

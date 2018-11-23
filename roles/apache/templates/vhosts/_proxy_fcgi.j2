@@ -1,0 +1,39 @@
+{% set path = ".+\.ph(ar|p|tml)$" -%}
+{% if item.value['proxy_fcgi'].path is defined -%}
+    {% set path =  item.value['proxy_fcgi'].path -%}
+{% endif -%}
+
+{% set host_or_uds = 'proxy:socket:/var/run/php-fpm.sock' -%}
+{% if item.value['proxy_fcgi'].socket is defined -%}
+    {% set host_or_uds = 'proxy:unix:' + item.value['proxy_fcgi'].socket -%}
+{% elif item.value['proxi_fcgi'].host is defined -%}
+    {% set host_or_uds = 'proxy:fcgi:' + item.value['proxy_fcgi'].host -%}
+{% endif -%}
+
+{% set pass_header = '^Authorization$ "(.+)" HTTP_AUTHORIZATION=$1' -%}
+{% if item.value['proxy_fcgi'].pass_header is defined -%}
+    {% set pass_header =  item.value['proxy_fcgi'].pass_header -%}
+{% endif -%}
+
+{% set enablereuse = 'on' -%}
+{% if item.value['proxy_fcgi'].enable_reuse is defined -%}
+    {% set enablereuse =  item.value['proxy_fcgi'].enable_reuse -%}
+{% endif -%}
+
+<IfModule proxy_fcgi_module>
+    # Enable http authorization headers
+    <IfModule setenvif_module>
+    SetEnvIfNoCase {{ pass_header }}
+    </IfModule>
+    <FilesMatch "{{ path }}">
+        SetHandler "{{ host_or_uds }}|fcgi://localhost {{ 'enablereuse=on' if enablereuse == 'on' and item.value['proxy_fcgi'].host is defined else '' }}"
+    </FilesMatch>
+    <FilesMatch ".+\.phps$">
+        # Deny access to raw php sources by default
+        Require all denied
+    </FilesMatch>
+    # Deny access to files without filename (e.g. '.php')
+    <FilesMatch "^\.ph(ar|p|ps|tml)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>

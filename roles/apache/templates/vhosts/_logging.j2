@@ -1,0 +1,52 @@
+{% if item.value.error_log is defined %}
+{% if item.value.error_log['level'] is defined %}
+LogLevel "{{ item.value.error_log['level'] }}"
+{% endif %}
+{% if item.value.error_log['dest'] is defined and 'syslog' not in item.value.error_log['dest'] %}
+{% if item.value.error_log['dest']|first == '/' %}
+{% set dest = item.value.error_log['dest'] %}
+{% else %}
+{% set dest = apache_logroot + '/' + item.value.error_log['dest'] %}
+{% endif %}
+{% elif item.value.error_log['dest'] is defined and 'syslog' in item.value.error_log['dest'] %}
+{% if apache_version.split('.')[1] == '4' -%}
+{% set dest = '|' + apache_syslog['pipe24'] + ' -p ' + apache_syslog['priority_error'] + ' -t ' + apache_syslog['tag_error'] + '\'' %}
+{% else %}
+{% set dest = '|' + apache_syslog['pipe22'] + ' -p ' + apache_syslog['priority_error'] + ' -t ' + apache_syslog['tag_error'] %}
+{% endif %}
+{% elif item.value.error_log['pipe'] is defined %}
+{% set dest = '|' + item.value.error_log['pipe'] %}
+{% else %}
+{% set dest = apache_logroot + '/' + item.value['servername']|default(item.key) + '_error.log' %}
+{% endif %}
+ErrorLog "{{ dest }}"
+{% endif %}
+{% if item.value.access_log is defined %}
+{% set format = "'%{X-Forwarded-For}i %h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\" %b %D %T %P %V:%p' custom_vhost_log" %}
+{% if item.value.access_log['dest'] is defined and 'syslog' not in item.value.access_log['dest'] %}
+{% if item.value.access_log['format'] is defined %}
+{% set format = item.value.access_log['format'] %}
+{% endif %}
+{% if item.value.access_log['dest']|first == '/' %}
+{% set dest = item.value.access_log['dest'] %}
+{% else %}
+{% set dest = apache_logroot + '/' + item.value.access_log['dest'] %}
+{% endif %}
+{% elif item.value.access_log['dest'] is defined and 'syslog' in item.value.access_log['dest'] %}
+{% set format = "'%{X-Forwarded-For}i %h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\" %b %D %T %P %V:%p' syslog" %}
+{% if item.value.access_log['format'] is defined %}
+{% set format = item.value.access_log['format'] %}
+{% endif %}
+{% if apache_version.split('.')[1] == '4' -%}
+{% set dest = '|' + apache_syslog['pipe24'] + ' -p ' + apache_syslog['priority_access'] + ' -t ' + apache_syslog['tag_access'] + '\'' %}
+{% else %}
+{% set dest = '|' + apache_syslog['pipe22'] + ' -p ' + apache_syslog['priority_access'] + ' -t ' + apache_syslog['tag_access'] %}
+{% endif %}
+{% elif item.value.access_log['pipe'] is defined %}
+{% set dest = '|' + item.value.access_log['pipe'] %}
+{% else %}
+{% set dest = apache_logroot + '/' + item.value['servername']|default(item.key) + '_access.log' %}
+{% endif %}
+{% endif %}
+LogFormat {{ format }}
+CustomLog "{{ dest }}" {{ format.split(' ')[-1] }}

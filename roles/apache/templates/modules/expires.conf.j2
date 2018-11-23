@@ -1,0 +1,17 @@
+{% for ban_line in apache_ansible_managed %}
+{{ ban_line }}
+{% endfor %}
+
+{% if apache_modules['expires'] is defined %}
+ExpiresActive   {{ apache_modules['expires'].state|default('On') }}
+{% if apache_modules['expires'].default is defined %}
+ExpiresDefault  "{{ apache_modules['expires'].default }}"
+{% endif %}
+{% if apache_modules['expires'].by_type is defined %}
+{% for type in apache_modules['expires'].by_type %}
+ExpiresByType   {{ type }}
+{% endfor %}
+{% endif %}
+{% else %}
+ExpiresActive On
+{% endif %}

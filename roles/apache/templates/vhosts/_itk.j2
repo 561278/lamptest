@@ -1,0 +1,23 @@
+<IfModule mpm_itk_module>
+{% if item.value.itk['user'] is defined and item.value.itk["group"] is defined %}
+          AssignUserId {{ item.value.itk['user'] }} {{ item.value.itk["group"] }}
+{% endif %}
+{% if item.value.itk['assignuseridexpr'] is defined %}
+          AssignUserIdExpr {{ item.value.itk['assignuseridexpr'] }}
+{% endif %}
+{% if item.value.itk['assigngroupidexpr'] is defined %}
+          AssignGroupIdExpr {{ item.value.itk['assigngroupidexpr'] }}
+{% endif %}
+{% if item.value.itk['maxclientvhost'] is defined %}
+          MaxClientsVHost {{ item.value.itk['maxclientvhost'] }}
+{% endif %}
+{% if item.value.itk['nice'] is defined %}
+          NiceValue {{ item.value.itk['nice'] }}
+{% endif %}
+{% if item.value.itk['limituidrange'] is defined %}
+          LimitUIDRange {{ item.value.itk['limituidrange'] }}
+{% endif %}
+{% if item.value.itk['limitgidrange'] is defined %}
+          LimitGIDRange {{ item.value.itk['limitgidrange'] }}
+{% endif %}
+</IfModule>

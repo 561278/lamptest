@@ -1,0 +1,4 @@
+# {{ ansible_managed }}
+Package: {{ item.value.pin_packages }}
+Pin: release {{ item.value.pin }}
+Pin-Priority: {{ item.value.pin_priority }}

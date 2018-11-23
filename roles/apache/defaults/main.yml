@@ -1,0 +1,326 @@
+---
+## DEFAULT SETTINGS
+apache_mpm                       : worker
+apache_bind: ['*:80']        ### IP:PORT PROTO ; * => Bind ALL ; PROTO only if https is a not standard port => '*:8443 https'
+
+apache_include: []
+
+apache_server_tokens             : 'Prod'
+apache_server_signature          : 'Off'
+apache_trace_enable              : 'Off'
+apache_timeout                   : 300
+apache_keepalive                 : 'Off'
+apache_max_keepalive_requests    : 100
+apache_keepalive_timeout         : 15
+apache_limit_request_field_size  : 8190
+apache_default_type              : 'None'
+apache_sendfile                  : 'On'
+apache_ssl_protocol              : "All -SSLv2 -SSLv3"
+apache_ssl_cipher_suite          : "AES256+EECDH:AES256+EDH"
+apache_directory_index           : 'index.php index.html'
+apache_fastcgi_managed           : true
+apache_vhost_include_pattern     : '*.conf'
+apache_file_mode                 : '0444'
+apache_file_mode_symlink         : '0777'
+apache_use_systemd               : true
+apache_log_level                 : 'warn'
+apache_log_formats               : 'syslog'
+apache_default_log_formats       :
+   combined  : '"%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined'
+   common    : '"%h %l %u %t \"%r\" %>s %b" common'
+   referer   : '"%{Referer}i -> %U" referer'
+   agent     : '"%{User-agent}i" agent'
+   forwarded : '"%{X-Forwarded-For}i %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-agent}i\"" forwarded'
+   syslog    : '"%{X-Forwarded-For}i %h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\" %b %D %T %P %V:%p" syslog'
+
+apache_syslog:
+   priority_access : local7.info
+   priority_error  : local7.err
+   tag_access      : apache_access_log
+   tag_error       : apache_error_log
+   pipe22          : "logger"
+   pipe24          : "/bin/sh -c 'logger"
+
+apache_manage_security   : true
+apache_httpoxy_mitigation: true
+apache_setid             : true
+
+apache_root_directory_options    : ['FollowSymLinks']
+apache_docroot                   : '/var/www'
+apache_letsencrypt_dir           : '/var/www/letsencrypt'
+
+apache_mime_types_additional:
+    AddHandler      : { type-map  : 'var' }
+    AddType         : { text/html : '.shtml' }
+    AddOutputFilter : { INCLUDES  : '.shtml' }
+
+## Not surchage
+apache_default_enabled_modules:
+  - expires
+  - headers
+  - rewrite
+  - actions
+  - filter
+
+apache_embeded_include:
+  - /etc/apache2
+  - /etc/apache2/conf-enabled
+  - /etc/apache2/conf-available
+  - /etc/apache2/mods-available
+  - /etc/apache2/mods-enabled
+  - /etc/apache2/sites-available
+  - /etc/apache2/sites-enabled
+
+apache_mod_no_template_default:
+  - socache_shmcb
+  - suexec
+  - jk
+  - php5
+  - php
+  - dav
+  - cache
+  - proxy_fcgi
+  - authz_groupfile
+  - proxy_connect
+
+apache_mod_no_template: []
+
+apache_default_vhost:
+  - name              : "000-default"
+    path              : "."
+    documentroot      : "/var/www/awh"
+    user              : "root"
+    group             : "root"
+    data              : "default-data"
+    enable            : True
+
+## DICT
+apache_enable_mod  : []
+apache_disable_mod : []
+apache_fastcgi : {}
+apache_vhosts : {}
+apache_modules: {}
+apache_badbot: {}
+apache_block: {}
+apache_htpasswd: {}
+
+## HEADER
+apache_ansible_managed : [
+ '# ########################## /!\ FILE MANAGED BY ANSIBLE ######################################',
+ '# Any changes of this file should be done trough ansible, otherwise changes will be overwriten#',
+ '# #############################################################################################',
+]
+
+apache_badbot_useragent_default:
+  - "Aboundex"
+  - "80legs"
+  - "360Spider"
+  - "^Java"
+  - "^Cogentbot"
+  - "^Alexibot"
+  - "^asterias"
+  - "^attach"
+  - "^BackDoorBot"
+  - "^BackWeb"
+  - "Bandit"
+  - "^BatchFTP"
+  - "^Bigfoot"
+  - "^Black.Hole"
+  - "^BlackWidow"
+  - "^BlowFish"
+  - "^BotALot"
+  - "Buddy"
+  - "^BuiltBotTough"
+  - "^Bullseye"
+  - "^BunnySlippers"
+  - "^Cegbfeieh"
+  - "^CheeseBot"
+  - "^CherryPicker"
+  - "^ChinaClaw"
+  - "Collector"
+  - "Copier"
+  - "^CopyRightCheck"
+  - "^cosmos"
+  - "^Crescent"
+  - "^Custo"
+  - "^AIBOT"
+  - "^DISCo"
+  - "^DIIbot"
+  - "^DittoSpyder"
+  - "^Download\ Demon"
+  - "^Download\ Devil"
+  - "^Download\ Wonder"
+  - "^dragonfly"
+  - "^Drip"
+  - "^eCatch"
+  - "^EasyDL"
+  - "^ebingbong"
+  - "^EirGrabber"
+  - "^EmailCollector"
+  - "^EmailSiphon"
+  - "^EmailWolf"
+  - "^EroCrawler"
+  - "^Exabot"
+  - "^Express\ WebPictures"
+  - "Extractor"
+  - "^EyeNetIE"
+  - "^Foobot"
+  - "^flunky"
+  - "^FrontPage"
+  - "^Go-Ahead-Got-It"
+  - "^gotit"
+  - "^GrabNet"
+  - "^Grafula"
+  - "^Harvest"
+  - "^hloader"
+  - "^HMView"
+  - "^HTTrack"
+  - "^humanlinks"
+  - "^IlseBot"
+  - "^Image\ Stripper"
+  - "^Image\ Sucker"
+  - "Indy\ Library"
+  - "^InfoNaviRobot"
+  - "^InfoTekies"
+  - "^Intelliseek"
+  - "^InterGET"
+  - "^Internet\ Ninja"
+  - "^Iria"
+  - "^Jakarta"
+  - "^JennyBot"
+  - "^JetCar"
+  - "^JOC"
+  - "^JustView"
+  - "^Jyxobot"
+  - "^Kenjin.Spider"
+  - "^Keyword.Density"
+  - "^larbin"
+  - "^LexiBot"
+  - "^lftp"
+  - "^libWeb/clsHTTP"
+  - "^likse"
+  - "^LinkextractorPro"
+  - "^LinkScan/8.1a.Unix"
+  - "^LNSpiderguy"
+  - "^LinkWalker"
+  - "^lwp-trivial"
+  - "^LWP::Simple"
+  - "^Magnet"
+  - "^Mag-Net"
+  - "^MarkWatch"
+  - "^Mass\ Downloader"
+  - "^Mata.Hari"
+  - "^Memo"
+  - "^Microsoft.URL"
+  - "^Microsoft\ URL\ Control"
+  - "^MIDown\ tool"
+  - "^MIIxpc"
+  - "^Mirror"
+  - "^Missigua\ Locator"
+  - "^Mister\ PiX"
+  - "^moget"
+  - "^Mozilla/3.Mozilla/2.01"
+  - "^Mozilla.*NEWT"
+  - "^NAMEPROTECT"
+  - "^Navroad"
+  - "^NearSite"
+  - "^NetAnts"
+  - "^Netcraft"
+  - "^NetMechanic"
+  - "^NetSpider"
+  - "^Net\ Vampire"
+  - "^NetZIP"
+  - "^NextGenSearchBot"
+  - "^NG"
+  - "^NICErsPRO"
+  - "^niki-bot"
+  - "^NimbleCrawler"
+  - "^Ninja"
+  - "^NPbot"
+  - "^Octopus"
+  - "^Offline\ Explorer"
+  - "^Offline\ Navigator"
+  - "^Openfind"
+  - "^OutfoxBot"
+  - "^PageGrabber"
+  - "^Papa\ Foto"
+  - "^pavuk"
+  - "^pcBrowser"
+  - "^PHP\ version\ tracker"
+  - "^Pockey"
+  - "^ProPowerBot/2.14"
+  - "^ProWebWalker"
+  - "^psbot"
+  - "^Pump"
+  - "^QueryN.Metasearch"
+  - "^RealDownload"
+  - "Reaper"
+  - "Recorder"
+  - "^ReGet"
+  - "^RepoMonkey"
+  - "^RMA"
+  - "Siphon"
+  - "^SiteSnagger"
+  - "^SlySearch"
+  - "^SmartDownload"
+  - "^Snake"
+  - "^Snapbot"
+  - "^Snoopy"
+  - "^sogou"
+  - "^SpaceBison"
+  - "^SpankBot"
+  - "^spanner"
+  - "^Sqworm"
+  - "Stripper"
+  - "Sucker"
+  - "^SuperBot"
+  - "^SuperHTTP"
+  - "^Surfbot"
+  - "^suzuran"
+  - "^Szukacz/1.4"
+  - "^tAkeOut"
+  - "^Teleport"
+  - "^Telesoft"
+  - "^TurnitinBot/1.5"
+  - "^The.Intraformant"
+  - "^TheNomad"
+  - "^TightTwatBot"
+  - "^Titan"
+  - "^True_Robot"
+  - "^turingos"
+  - "^TurnitinBot"
+  - "^URLy.Warning"
+  - "^Vacuum"
+  - "^VCI"
+  - "^VoidEYE"
+  - "^Web\ Image\ Collector"
+  - "^Web\ Sucker"
+  - "^WebAuto"
+  - "^WebBandit"
+  - "^Webclipping.com"
+  - "^WebCopier"
+  - "^WebEMailExtrac.*"
+  - "^WebEnhancer"
+  - "^WebFetch"
+  - "^WebGo\ IS"
+  - "^Web.Image.Collector"
+  - "^WebLeacher"
+  - "^WebmasterWorldForumBot"
+  - "^WebReaper"
+  - "^WebSauger"
+  - "^Website\ eXtractor"
+  - "^Website\ Quester"
+  - "^Webster"
+  - "^WebStripper"
+  - "^WebWhacker"
+  - "^WebZIP"
+  - "Whacker"
+  - "^Widow"
+  - "^WISENutbot"
+  - "^WWWOFFLE"
+  - "^WWW-Collector-E"
+  - "^Xaldon"
+  - "^Xenu"
+  - "^Zeus"
+  - "ZmEu"
+  - "^Zyborg"

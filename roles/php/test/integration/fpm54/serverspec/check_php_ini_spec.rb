@@ -1,0 +1,1 @@
+../../specs/check_php_ini_spec.rb

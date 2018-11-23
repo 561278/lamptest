@@ -1,0 +1,78 @@
+---
+
+- name: Configure default FPM Process
+  template:
+    src  : '{{ php_fpm_conf_file |default("php-fpm.conf.j2") }}'
+    dest : "{{ php_fpm_conf_dir }}/php-fpm.conf"
+    owner: root
+    group: root
+    mode : 0444
+  notify : php-fpm-reload
+  when   : "php_sapi == 'fpm'"
+
+- name: Configure php.ini file for PHP FPM
+  template:
+    src  : '{{ php_server_ini_file |default("php.ini.j2") }}'
+    dest : "{{ php_fpm_dest_conf_file }}"
+    owner: root
+    group: root
+    mode : 0444
+  notify : php-fpm-reload
+  when   : "php_sapi == 'fpm'"
+
+- name: Push fpm pools configuration
+  template:
+    src  :  'php-fpm.pool.conf.j2'
+    dest :  '{{ php_fpm_pool_dir }}/{{ item.name }}.conf'
+    owner:  root
+    group:  root
+    mode :  0444
+  with_items: '{{php_fpm_pools}}'
+  notify    : php-fpm-reload
+  when      : "php_sapi == 'fpm'"
+
+- name: Configure path of ini file for PHP ApacheMod
+  file:
+    path: "{{php_apache_conf_dir}}"
+    state: directory
+    mode: 0755
+  when   : php_sapi == "apache" or php_mod_php
+
+- name: Configure php.ini file for PHP ApacheMod
+  template:
+    src  : '{{ php_server_ini_file |default("php.ini.j2") }}'
+    dest : "{{ php_apache_dest_conf_file }}"
+    owner: root
+    group: root
+    mode : 0444
+  notify : php-apache-restart
+  when   : php_sapi == "apache" or php_mod_php
+
+- name: Configure php.ini file for CLI
+  template:
+    src  : '{{ php_cli_ini_file |default("php-cli.ini.j2") }}'
+    dest : "{{ php_cli_dest_conf_file }}"
+    owner: root
+    group: root
+    mode : 0444
+
+- name: Configure PHP7 systemd unit
+  lineinfile:
+    dest: /etc/systemd/system/multi-user.target.wants/{{php_prefix}}-fpm.service
+    regexp: '^PIDFile='
+    line: 'PIDFile={{ php_fpm.pid|default(php_fpm_default.pid) }}'
+  notify: systemd-daemon-reload
+  when: "ansible_service_mgr|default() == 'systemd' and php_sapi == 'fpm' and php_prefix|search('7')"
+
+- name: remove upstart script (ansible bug)
+  file:
+    name: "/etc/init/{{ php_fpm_daemon }}.conf"
+    state: absent
+  when: "php_sapi == 'fpm'"
+
+- name: Ensure php-fpm is started and enabled at boot
+  service:
+    name   : '{{ php_fpm_daemon }}'
+    state  : started
+    enabled: yes
+  when   : "php_sapi == 'fpm'"

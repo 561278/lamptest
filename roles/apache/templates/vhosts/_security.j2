@@ -1,0 +1,19 @@
+{% if item.value.security['disable_vhost'] is defined %}
+SecRuleEngine Off
+{% endif %}
+{% if item.value.security['disable_ids'] is defined %}
+{% for location,rules in item.value.security['disable_ids'].iteritems() %}
+<LocationMatch {{ location }}>
+{% for rule in rules %}
+    SecRuleRemoveById {{ rule }}
+{% endfor %}
+</LocationMatch>
+{% endfor %}
+{% endif %}
+{% if item.value.security['disable_ips'] is defined %}
+  SecRule REMOTE_ADDR "{{ item.value.security['disable_ips']|join(',') }}" "nolog,allow,id:1234123455"
+  SecAction  "phase:2,pass,nolog,id:1234123456"
+{% endif %}
+{% if item.value.security['body_limit'] is defined %}
+  SecRequestBodyLimit {{ item.value.security['body_limit'] }}
+{% endif %}

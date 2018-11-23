@@ -1,0 +1,41 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+CASCookiePath         {{ apache_modules['auth_cas'].cookie_path|default(apache_mod_auth_cas['cookie_path']) }}
+CASLoginURL           {{ apache_modules['auth_cas'].login_url }}
+CASValidateURL        {{ apache_modules['auth_cas'].validate_url }}
+
+CASVersion            {{ apache_modules['auth_cas'].version|default('2') }}
+CASDebug              {{ apache_modules['auth_cas'].debug|default('Off') }}
+
+{% if apache_modules['auth_cas'].certificate_path is defined %}
+CASCertificatePath    {{ apache_modules['auth_cas'].certificate_path }}
+{% endif %}
+{% if apache_modules['auth_cas'].proxy_validate_url is defined %}
+CASProxyValidateURL   {{ apache_modules['auth_cas'].proxy_validate_url }}
+{% endif %}
+{% if apache_modules['auth_cas'].validate_depth is defined %}
+CASValidateDepth      {{ apache_modules['auth_cas'].validate_depth }}
+{% endif %}
+{% if apache_modules['auth_cas'].root_proxied_as is defined %}
+CASRootProxiedAs      {{ apache_modules['auth_cas'].root_proxied_as }}
+{% endif %}
+{% if apache_modules['auth_cas'].cookie_entropy is defined %}
+CASCookieEntropy      {{ apache_modules['auth_cas'].cookie_entropy }}
+{% endif %}
+{% if apache_modules['auth_cas'].timeout is defined %}
+CASTimeout            {{ apache_modules['auth_cas'].timeout }}
+{% endif %}
+{% if apache_modules['auth_cas'].idle_timeout is defined %}
+CASIdleTimeout        {{ apache_modules['auth_cas'].idle_timeout }}
+{% endif %}
+{% if apache_modules['auth_cas'].cache_clean_interval is defined %}
+CASCacheCleanInterval {{ apache_modules['auth_cas'].cache_clean_interval }}
+{% endif %}
+{% if apache_modules['auth_cas'].cookie_domain is defined %}
+CASCookieDomain       {{ apache_modules['auth_cas'].cookie_domain }}
+{% endif %}
+{% if apache_modules['auth_cas'].cookie_http_only is defined %}
+CASCookieHttpOnly     {{ apache_modules['auth_cas'].cookie_http_only }}
+{% endif %}

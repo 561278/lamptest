@@ -1,0 +1,20 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+ExtendedStatus  {{ apache_modules['status'].extended_status|default('On') }}
+<Location {{ apache_modules['status'].path|default('/server-status') }}>
+    SetHandler server-status
+    {% if apache_version.split('.')[1] == '4' -%}
+    Require ip {{ apache_modules['status'].allow_from|default(['127.0.0.1', '::1'])|join(" ") }}
+    {% else -%}
+    Order deny,allow
+    Deny from all
+    Allow from  {{ apache_modules['status'].allow_from|default(['127.0.0.1', '::1'])|join(" ") }}
+    {% endif %}
+
+</Location>
+
+<IfModule mod_proxy.c>
+    ## Show Proxy LoadBalancer status
+    ProxyStatus On
+</IfModule>

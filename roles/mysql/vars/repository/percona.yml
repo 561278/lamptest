@@ -1,0 +1,12 @@
+---
+mysql_repo:
+  'percona':
+    url          : 'http://repo.percona.com/apt'
+    distribution : '{{ ansible_distribution_release }}'
+    section      : 'main'
+    state        : 'present'
+    keyserver    : 'keyserver.ubuntu.com'
+    id           : '9334A25F8507EFA5'
+    pin          : 'version {{mysql_version}}.*'
+    pin_packages : 'percona-*'
+    pin_priority : 990

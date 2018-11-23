@@ -1,0 +1,18 @@
+---
+php_repo:
+  'php_repository':
+    url          : "http://ppa.launchpad.net/ondrej/php/ubuntu"
+    distribution : 'trusty'
+    keyserver    : "keyserver.ubuntu.com"
+    section      : 'main'
+    id           : 'E5267A6C'
+    state        : 'present'
+    pin          : 'o=ppa.launchpad.net/ondrej/php/ubuntu'
+    pin_packages : '*'
+    pin_priority : '{{ php_pin_priority }}'
+
+# specific prefix for this repository
+php_conf_dir                 : '/etc/php/5.6'
+php_prefix                   : 'php5.6'
+php_fpm_daemon               : 'php5.6-fpm'
+php_apache_daemon            : 'apache2'

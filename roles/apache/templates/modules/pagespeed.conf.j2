@@ -1,0 +1,99 @@
+{% for ban_line in apache_ansible_managed %}
+{{ ban_line }}
+{% endfor %}
+
+ModPagespeed on
+
+ModPagespeedInheritVHostConfig {{ apache_modules['pagespeed'].inherit_vhost_config|default('on') }}
+AddOutputFilterByType MOD_PAGESPEED_OUTPUT_FILTER text/html
+{% if apache_modules['pagespeed'].filter_xhtml is defined and apache_modules['pagespeed'].filter_xhtml %}
+AddOutputFilterByType MOD_PAGESPEED_OUTPUT_FILTER application/xhtml+xml
+{% endif %}
+ModPagespeedFileCachePath "{{ apache_modules['pagespeed'].cache_path|default('/var/cache/mod_pagespeed') }}"
+ModPagespeedLogDir "{{ apache_modules['pagespeed'].log_dir|default('/var/log/pagespeed') }}"
+
+{% if apache_modules['pagespeed'].memcache_servers is defined %}
+{% for server in apache_modules['pagespeed'].memcache_servers %}
+ModPagespeedMemcachedServers {{ server }}
+{% endfor %}
+{% endif %}
+
+ModPagespeedRewriteLevel {{ apache_modules['pagespeed'].rewrite_level|default('CoreFilters') }}
+
+{% if apache_modules['pagespeed'].disable_filters is defined %}
+{% for filter in apache_modules['pagespeed'].disable_filters %}
+ModPagespeedDisableFilters {{ filter }}
+{% endfor %}
+{% endif %}
+
+{% if apache_modules['pagespeed'].enable_filters is defined %}
+{% for filter in apache_modules['pagespeed'].enable_filters %}
+ModPagespeedEnableFilters {{ filter }}
+{% endfor %}
+{% endif %}
+
+{% if apache_modules['pagespeed'].forbid_filters is defined %}
+{% for filter in apache_modules['pagespeed'].forbid_filters %}
+ModPagespeedForbidFilters  {{ filter }}
+{% endfor %}
+{% endif %}
+
+ModPagespeedRewriteDeadlinePerFlushMs {{ apache_modules['pagespeed'].rewrite_deadline_per_flush_ms|default('10') }}
+
+{% if apache_modules['pagespeed'].additional_domains is defined %}
+ModPagespeedDomain {{ apache_modules['pagespeed'].additional_domains }}
+{% endif %}
+
+ModPagespeedFileCacheSizeKb          {{ apache_modules['pagespeed'].file_cache_size_kb|default('102400') }}
+ModPagespeedFileCacheCleanIntervalMs {{ apache_modules['pagespeed'].file_cache_clean_interval_ms|default('3600000') }}
+ModPagespeedLRUCacheKbPerProcess     {{ apache_modules['pagespeed'].lru_cache_per_process|default('1024') }}
+ModPagespeedLRUCacheByteLimit        {{ apache_modules['pagespeed'].lru_cache_byte_limit|default('16384') }}
+ModPagespeedCssFlattenMaxBytes       {{ apache_modules['pagespeed'].css_flatten_max_bytes|default('2048') }}
+ModPagespeedCssInlineMaxBytes        {{ apache_modules['pagespeed'].css_inline_max_bytes|default('2048') }}
+ModPagespeedCssImageInlineMaxBytes   {{ apache_modules['pagespeed'].css_image_inline_max_bytes|default('2048') }}
+ModPagespeedImageInlineMaxBytes      {{ apache_modules['pagespeed'].image_inline_max_bytes|default('2048') }}
+ModPagespeedJsInlineMaxBytes         {{ apache_modules['pagespeed'].js_inline_max_bytes|default('2048') }}
+ModPagespeedCssOutlineMinBytes       {{ apache_modules['pagespeed'].css_outline_min_bytes|default('3000') }}
+ModPagespeedJsOutlineMinBytes        {{ apache_modules['pagespeed'].js_outline_min_bytes|default('3000') }}
+
+
+ModPagespeedFileCacheInodeLimit {{ apache_modules['pagespeed'].inode_limit|default('500000') }}
+ModPagespeedImageMaxRewritesAtOnce {{ apache_modules['pagespeed'].image_max_rewrites_at_once|default('8') }}
+
+ModPagespeedNumRewriteThreads {{ apache_modules['pagespeed'].num_rewrite_threads|default('4') }}
+ModPagespeedNumExpensiveRewriteThreads {{ apache_modules['pagespeed'].num_expensive_rewrite_threads|default('4') }}
+
+ModPagespeedStatistics {{ apache_modules['pagespeed'].collect_statistics|default('on') }}
+
+<Location /mod_pagespeed_statistics>
+    {% if apache_version.split('.')[1] == '4' %}
+    Require ip 127.0.0.1 ::1 {{ apache_modules['pagespeed'].allow_view_stats|default([])|join(" ") }}
+    {% else %}
+    Order allow,deny
+    Allow from 127.0.0.1 ::1 {{ apache_modules['pagespeed'].allow_view_stats|default([])|join(" ") }}
+    {% endif %}
+    SetHandler mod_pagespeed_statistics
+</Location>
+
+ModPagespeedStatisticsLogging {{ apache_modules['pagespeed'].statistics_logging|default('on') }}
+<Location /pagespeed_console>
+    {% if apache_version.split('.')[1] == '4' %}
+    Require ip 127.0.0.1 ::1 {{ apache_modules['pagespeed'].allow_pagespeed_console|default([])|join(" ") }}
+    {% else %}
+    Order allow,deny
+    Allow from 127.0.0.1 ::1 {{ apache_modules['pagespeed'].allow_pagespeed_console|default([])|join(" ") }}
+    {% endif %}
+    SetHandler pagespeed_console
+</Location>
+
+ModPagespeedMessageBufferSize {{ apache_modules['pagespeed'].message_buffer_size|default('100000') }}
+
+<Location /mod_pagespeed_message>
+    {% if apache_version.split('.')[1] == '4' %}
+    Require ip 127.0.0.1 ::1 {{ apache_modules['pagespeed'].allow_pagespeed_message|default([])|join(" ") }}
+    {% else %}
+    Order allow,deny
+    Allow from 127.0.0.1 ::1 {{ apache_modules['pagespeed'].allow_pagespeed_message|default([])|join(" ") }}
+    {% endif %}
+    SetHandler mod_pagespeed_message
+</Location>

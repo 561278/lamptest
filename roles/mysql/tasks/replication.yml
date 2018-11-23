@@ -1,0 +1,63 @@
+---
+- name: Create the replication users
+  mysql_user:
+    name: "{{ mysql_replication_user.name }}"
+    host: "{{ mysql_replication_user.host }}"
+    password: "{{ mysql_replication_user.pass }}"
+    priv: "*.*:REPLICATION SLAVE"
+    state: present
+  when: mysql_replication_role == 'master'
+
+- name: check if slave is already configured for replication
+  mysql_replication:
+    mode: getslave
+  ignore_errors: true
+  register: slave
+  changed_when: false
+  when: mysql_replication_role == 'slave' or mysql_replication_slaveof is defined
+
+- name: get the current master servers replication status
+  changed_when: false
+  mysql_replication:
+    mode: getmaster
+  delegate_to: "{{ mysql_replication_master|default(mysql_replication_slaveof) }}"
+  register: replication_status
+  when:
+    - ((slave.Is_Slave is defined and not slave.Is_Slave) or (slave.Is_Slave is not defined and slave|failed))
+    - (mysql_replication_role == 'slave' and mysql_replication_master is defined) or (mysql_replication_role == 'master' and mysql_replication_slaveof is defined)
+    - (mysql_gtid_mode is not defined) or (mysql_gtid_mode is defined and mysql_gtid_mode == 'OFF')
+
+- name: change the master in slave to start the replication
+  mysql_replication:
+    mode: changemaster
+    master_host: "{{ mysql_replication_master|default(mysql_replication_slaveof) }}"
+    master_user: "{{ mysql_replication_user.name }}"
+    master_password: "{{ mysql_replication_user.pass }}"
+    master_log_file: "{{ replication_status.File }}"
+    master_log_pos: "{{ replication_status.Position }}"
+  when:
+    - ((slave.Is_Slave is defined and not slave.Is_Slave) or (slave.Is_Slave is not defined and slave|failed))
+    - (mysql_replication_role == 'slave' and mysql_replication_master is defined) or (mysql_replication_role == 'master' and mysql_replication_slaveof is defined)
+    - (mysql_gtid_mode is not defined) or (mysql_gtid_mode is defined and mysql_gtid_mode == 'OFF')
+  ignore_errors: True
+
+- name: change the master in slave to start the replication (using master_auto_position)
+  mysql_replication:
+    mode: changemaster
+    master_host: "{{ mysql_replication_master|default(mysql_replication_slaveof) }}"
+    master_user: "{{ mysql_replication_user.name }}"
+    master_password: "{{ mysql_replication_user.pass }}"
+    master_auto_position: True
+  when:
+    - ((slave.Is_Slave is defined and not slave.Is_Slave) or (slave.Is_Slave is not defined and slave|failed))
+    - (mysql_replication_role == 'slave' and mysql_replication_master is defined) or (mysql_replication_role == 'master' and mysql_replication_slaveof is defined)
+    - mysql_gtid_mode is defined and mysql_gtid_mode != 'OFF'
+  ignore_errors: True
+
+- name: start replication
+  mysql_replication:
+    mode: startslave
+  when:
+    - ((slave.Is_Slave is defined and not slave.Is_Slave) or (slave.Is_Slave is not defined and slave|failed))
+    - (mysql_replication_role == 'slave' and mysql_replication_master is defined) or (mysql_replication_role == 'master' and mysql_replication_slaveof is defined)
+  register: replication_start

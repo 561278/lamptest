@@ -1,0 +1,12 @@
+---
+mysql_version: '10.2'
+mysql_provider: mariadb
+mysql_bind_address: 0.0.0.0
+mysql_root_password: 'awhsecret'
+mysql_log_bin_trust_function_creators: true
+mysql_replication: true
+mysql_replication_role: master
+mysql_replication_user:
+  name : 'replication'
+  host : '%'
+  pass : 'repsecret'

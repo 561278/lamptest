@@ -1,0 +1,9 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+<IfModule mod_fcgid.c>
+{% for key, value in apache_modules['fcgid'].iteritems() -%}
+  {{ key }} {{ value }}
+{% endfor -%}
+</IfModule>

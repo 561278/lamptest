@@ -1,0 +1,13 @@
+---
+mysql_packages:
+  - 'mysql-server'
+  - 'mysql-client'
+  - 'mysql-common'
+  - 'mysqltuner'
+
+mysql_cluster_packages: []
+mysql_debconf:
+  name    : "{{ 'mysql-server-' + mysql_version if mysql_version == '5.5' else 'mysql-community-server'  }}"
+  question:
+    - "{{ 'mysql-server-' + mysql_version if mysql_version == '5.5' else 'mysql-community-server'  }}/root-pass"
+    - "{{ 'mysql-server-' + mysql_version if mysql_version == '5.5' else 'mysql-community-server'  }}/re-root-pass"

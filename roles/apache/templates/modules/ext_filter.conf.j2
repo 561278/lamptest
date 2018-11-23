@@ -1,0 +1,9 @@
+{% for ban_line in apache_ansible_managed %}
+{{ ban_line }}
+{% endfor %}
+
+{% if apache_modules['ext_filter'] is defined -%}
+{% for key,value in apache_modules['ext_filter'].iteritems() -%}
+ExtFilterDefine {{ key }} {{ value }}
+{% endfor -%}
+{% endif -%}

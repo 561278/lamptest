@@ -1,0 +1,12 @@
+---
+mysql_repo:
+  'mariadb':
+    url          : 'http://mariadb.mirrors.ovh.net/MariaDB/repo/{{mysql_version}}/{{ansible_distribution|lower}}'
+    distribution : '{{ ansible_distribution_release }}'
+    section      : 'main'
+    state        : 'present'
+    keyserver    : 'keyserver.ubuntu.com'
+    id           : 'F1656F24C74CD1D8'
+    pin          : 'version {{mysql_version}}.*'
+    pin_packages : 'mariadb-server'
+    pin_priority : 990

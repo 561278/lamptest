@@ -1,0 +1,185 @@
+---
+
+mysql_version        : '10.2'
+mysql_provider       : 'mariadb' # oracle|mariadb|percona
+mysql_installation   : false
+mysql_reinstall      : false
+mysql_configuration  : false
+mysql_has_restart    : true
+mysql_remove_lostfound: true
+mysql_include: {}
+#mysql_custom_repo: {}
+mysql_root_password  : "{{ lookup('password', '/tmp/mysql_password chars=ascii_letters,digits,hexdigits') }}"
+mysql_bind_iface     : "{{ ansible_default_ipv4.interface }}"
+mysql_port: 3306
+mysql_bind_address: 127.0.0.1
+mysql_socket: /var/run/mysqld/mysqld.sock
+mysql_nice: 0
+mysql_pid: /var/run/mysqld/mysqld.pid
+mysql_basedir: /usr
+mysql_datadir: /var/lib/mysql
+mysql_tmpdir: /tmp
+mysql_sql_mode:
+  - NO_ENGINE_SUBSTITUTION
+  - STRICT_ALL_TABLES
+mysql_user: mysql
+mysql_group: '{{mysql_user}}'
+mysql_max_allowed_packet: 16M
+mysql_expire_logs_days: 1
+mysql_max_binlog_size: 100M
+mysql_myisam_recover: BACKUP
+mysql_general_logging : false    ## Be carelful when you set this to true. This hug performance
+mysql_general_log_file: '/var/log/mysql/mysql.log'
+mysql_log_error_type: syslog   #  syslog|file
+mysql_log_error_file: '/var/log/mysql/mysql-error.log'
+mysql_slow_queries_logging : false ## Be carelful when you set this to true. This hug performance
+mysql_slow_queries_log_file: '/var/log/mysql/mysql-slow.log'
+mysql_long_query_time     : 10
+mysql_log_queries_not_using_indexes : false
+mysql_open_files_limit: '1024'
+mysql_fetch_dir      : "/tmp/"
+mysql_conf_dir       : "/etc/mysql"
+mysql_purge: True
+mysql_managed_conf:
+   - '{{ mysql_conf_dir }}/my.cnf'
+   - '{{ mysql_conf_dir }}/debian.cnf'
+   - '{{ mysql_conf_dir }}/debian-start'
+   - '{{ mysql_conf_dir }}/conf.d'
+   - '{{ mysql_conf_dir }}/conf.d/cluster.cnf'
+   - '{{ mysql_conf_dir }}/conf.d/mariadb.cnf'
+mysql_managed_confdir: '{{ mysql_conf_dir }}/conf.d/'
+mysql_local_host: ['localhost', '127.0.0.1', '::1']
+
+# mysql plugin
+mysql_plugin_audit_log: false
+mysql_plugin_audit_log_policy: LOGINS
+mysql_plugin_audit_log_file: '/var/log/mysql/audit.log'
+mysql_plugin_audit_log_format: OLD
+
+# InnoDB tuning  see => https://dev.mysql.com/doc/refman/5.7/en/optimizing-innodb.html
+mysql_innodb_file_per_table: 1
+mysql_innodb_buffer_pool_instances: 1
+mysql_innodb_buffer_pool_size: 128M
+mysql_innodb_log_file_size: 128M
+mysql_innodb_log_buffer_size: 8M
+mysql_innodb_thread_concurrency: 8
+mysql_innodb_read_io_threads: 4
+mysql_innodb_write_io_threads: 4
+mysql_innodb_open_files: 400
+mysql_innodb_io_capacity: 600
+mysql_innodb_lock_wait_timeout: 60
+mysql_innodb_flush_method: O_DIRECT
+mysql_innodb_doublewrite: 0
+mysql_innodb_use_native_aio: 1 # Please see https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_use_native_aio
+mysql_innodb_flush_log_at_trx_commit : 1
+mysql_default_storage_engine: InnoDB
+
+# Global Tuning
+mysql_key_buffer_size: 128M
+mysql_join_buffer_size: 262144
+mysql_table_open_cache: 1024
+mysql_connect_timeout: 5
+mysql_wait_timeout: 60
+mysql_sort_buffer_size: 262144
+mysql_bulk_insert_buffer_size: 16M
+mysql_tmp_table_size: 128M
+mysql_max_heap_table_size: 128M
+mysql_myisam_sort_buffer_size: 512M
+mysql_concurrent_insert: 2
+mysql_read_buffer_size: 131072
+mysql_read_rnd_buffer_size: 262144
+mysql_log_warnings: 2
+mysql_myisam_repair_threads: 16
+mysql_key_buffer: 16M
+mysql_thread_stack: 192K
+mysql_thread_cache_size: 128
+mysql_max_connections: 100
+mysql_table_cache: 64
+mysql_query_cache_type: 1
+mysql_query_cache_limit: 1M
+mysql_query_cache_size: 16M
+mysql_binlog_format: 'ROW'
+mysql_lc_messages_dir: '/usr/share/mysql'
+mysql_ignore_db_dir:
+  - 'lost+found'
+
+# Replication
+mysql_replication: False
+mysql_replication_server_id: 1
+mysql_auto_increment_increment: 1
+mysql_auto_increment_offset: 1
+mysql_log_bin: '/var/log/mysql/mysql-bin.log'
+
+mysql_binlog_do_db: []
+mysql_replicate_do_db: []
+mysql_binlog_ignore_db: []
+mysql_replicate_ignore_db: []
+mysql_relay_log: '/var/log/mysql/relay-bin'
+mysql_relay_log_index: '/var/log/mysql/relay-bin.index'
+mysql_sync_binlog: 0
+
+mysql_slave_readonly: '1'
+
+# Cluster
+mysql_cluster_enabled: false
+mysql_cluster_user: 'cluster_adm'
+#mysql_cluster_password:
+mysql_cluster_available_donor: 2
+mysql_cluster_host: '%'
+mysql_cluster_xinetd_network: '0.0.0.0'
+mysql_cluster_xinetd_port: 9500
+mysql_wsrep_on: !!str ON
+mysql_wsrep_provider_options: 'gcache.size=256M'
+mysql_wsrep_replicate_myisam: 'FALSE'
+mysql_wsrep_node_address: "{{ hostvars[inventory_hostname]['ansible_' + mysql_bind_iface]['ipv4']['address'] }}"
+mysql_wsrep_sst_method: 'xtrabackup-v2'
+mysql_wsrep_sst_auth: "{{mysql_cluster_user}}:{{mysql_cluster_password}}" #only if mysql_wsrep_sst_method = xtrabackup or xtrabackup-v2
+mysql_wsrep_slave_threads: 2
+mysql_wsrep_cluster_name: 'mysql_cluster'
+#mysql_wsrep_cluster_members:
+#  - "{{inventory_hostname}}"
+mysql_wsrep_cluster_address: "gcomm://{{ mysql_wsrep_cluster_members|join(',')}}"
+mysql_wsrep_raw: {} # optionnal dict key/value block
+mysql_log_bin_trust_function_creators: false
+mysql_cluster_tools_repository:
+  'percona':
+    url          : 'http://repo.percona.com/apt'
+    distribution : '{{ ansible_distribution_release }}'
+    section      : 'main'
+    state        : 'present'
+    keyserver    : 'keyserver.ubuntu.com'
+    id           : '9334A25F8507EFA5'
+    pin          : 'version {{mysql_version}}.*'
+    pin_packages : 'percona-*'
+    pin_priority : 990
+
+# /root/.my.cnf
+mysql_client_cnf:  # optionnal dict key/value block
+  default-character-set: utf8
+mysql_xtrabackup_files_limit: 2000
+
+# Backup
+mysql_backup:
+  enabled            : false
+  prefix             : mysql
+  user               : mysql_backup
+  password           : D7361A3E43EAA115D39B38ECAB
+  directory          : '/var/backup/mysql'
+  dir_mode           : 0700
+  dir_owner          : root
+  dir_group          : root
+  compress           : true
+  rotate             : 7  # i.e 7 days
+  ignore_events      : true
+  delete_before_dump : false
+  databases          : []
+  file_per_database  : true
+  time               : 23   # i.e 23h00
+  postscript         : false
+
+
+# explode version
+mysql_version_string: '{{mysql_version|string}}'
+mysql_version_major: '{{ mysql_version_string.split(".")[0]|int }}'
+mysql_version_minor: '{{ mysql_version_string.split(".")[1]|int }}'
+mysql_version_revision: '{{mysql_version_string.split(".")[2]|default() }}'

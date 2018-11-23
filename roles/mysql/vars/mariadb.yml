@@ -1,0 +1,21 @@
+---
+mysql_packages:
+  - 'mariadb-server'
+  - 'mariadb-client'
+  - 'mysqltuner'
+
+mysql_cluster_packages:
+  - "{{ 'mariadb-galera-server-' + mysql_version if mysql_version == '10.0' else 'mariadb-server' }}"
+  - 'mariadb-client-{{ mysql_version }}'
+  - 'percona-xtrabackup-24'
+  - 'mysqltuner'
+
+mysql_debconf:
+  name    : 'mysql-server'
+  question:
+    - 'mysql-server/root_password'
+    - 'mysql-server/root_password_again'
+
+
+mysql_cluster_bootstrap: "{{ 'galera_new_cluster' if ansible_service_mgr == 'systemd' else 'service mysql start --wsrep-new-cluster'  }}"
+mysql_wsrep_provider: '/usr/lib/galera/libgalera_smm.so'

@@ -1,0 +1,2 @@
+---
+mysql_replication_slaveof: mysql-node2

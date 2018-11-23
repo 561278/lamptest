@@ -1,0 +1,26 @@
+---
+# handlers file for awh-php
+
+- name: php-fpm-reload
+  service: name={{ php_fpm_daemon }} state=reloaded
+  when   : "php_sapi == 'fpm'"
+
+- name: php-fpm-start
+  service: name={{ php_fpm_daemon }} state=started
+  when   : "php_sapi == 'fpm'"
+
+- name: php-apache-reload
+  service: name={{ php_apache_daemon }} state=reloaded
+  when   : php_sapi == "apache" or php_mod_php
+
+- name: php-apache-restart
+  service: name={{ php_apache_daemon }} state=restarted
+  when   : php_sapi == "apache" or php_mod_php
+
+- name: php-apache-start
+  service: name={{ php_apache_daemon }} state=started
+  when   : php_sapi == "apache" or php_mod_php
+
+- name: systemd-daemon-reload
+  command: systemctl daemon-reload
+  when: ansible_virtualization_type != "docker"

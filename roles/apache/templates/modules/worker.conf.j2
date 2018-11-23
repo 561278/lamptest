@@ -1,0 +1,23 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+<IfModule mpm_worker_module>
+          {% if apache_modules['worker'].raw is defined -%}
+          {{ apache_modules['worker'].raw }}
+          {% endif -%}
+          ServerLimit         {{ apache_modules['worker'].serverlimit|default('25') }}
+          StartServers        {{ apache_modules['worker'].startservers|default('2') }}
+          ThreadLimit         {{ apache_modules['worker'].threadlimit|default('64') }}
+          MinSpareThreads     {{ apache_modules['worker'].minsparethreads|default('25') }}
+          MaxSpareThreads     {{ apache_modules['worker'].maxsparethreads|default('75') }}
+          ThreadsPerChild     {{ apache_modules['worker'].threadsperchild|default('25') }}
+          {% if apache_version.split('.')[1] == '4' %}
+          MaxRequestWorkers   {{ apache_modules['worker'].maxrequestworkers|default('150') }}
+          MaxConnectionsPerChild {{ apache_modules['worker'].maxconnectionsperchild|default('0') }}
+          {% else %}
+          MaxClients          {{ apache_modules['worker'].maxclients|default('150') }}
+          MaxRequestsPerChild {{ apache_modules['worker'].maxrequestsperchild|default('0') }}
+          {% endif %}
+          ListenBacklog       {{ apache_modules['worker'].listenbacklog|default('511') }}
+</IfModule>

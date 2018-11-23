@@ -1,0 +1,8 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+CacheEnable disk /
+CacheRoot "{{ apache_modules['cache_disk'].root|default(apache_mod_cache_disk['root']) }}"
+CacheDirLevels 2
+CacheDirLength 1

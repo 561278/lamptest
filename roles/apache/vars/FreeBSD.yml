@@ -1,0 +1,139 @@
+---
+
+apache_user                 :
+apache_group                : www-data
+apache_root_group           : root
+apache_daemon               : apache2
+apache_service_name         : apache2
+apache_httpd_dir            : /etc/apache2
+apache_server_root          : /etc/apache2
+apache_conf_dir             : /etc/apache2
+apache_confd_dir            : /etc/apache2/conf.d
+apache_mod_dir              : /etc/apache2/mods-available
+apache_mod_dir_relative     : ../mods-available
+apache_mod_enable_dir       : /etc/apache2/mods-enabled
+apache_vhost_dir            : /etc/apache2/sites-available
+apache_vhost_dir_relative   : ../sites-available
+apache_vhost_enable_dir     : /etc/apache2/sites-enabled
+apache_conf_file            : apache2.conf
+apache_ports_file           : /etc/apache2/ports.conf
+apache_pidfile              : "${APACHE_PID_FILE}"
+apache_log_root             : "${APACHE_LOG_DIR}"
+apache_logroot              : '/var/log/apache2'
+apache_lib_path             : /usr/lib/apache2/modules
+apache_default_ssl_cert     : /etc/ssl/certs/ssl-cert-snakeoil.pem
+apache_default_ssl_key      : /etc/ssl/private/ssl-cert-snakeoil.key
+apache_ssl_certs_dir        : /etc/apache/ssl/certs
+apache_suphp_addhandler     : x-httpd-php
+apache_suphp_engine         : 'off'
+apache_suphp_configpath     : /etc/php5/apache2
+apache_mpm_prefix           : apache2-mpm-
+apache_mime_support_package : mime-support
+apache_mime_types_config    : /etc/mime.types
+apache_alias_icons_path     : /usr/share/apache2/icons
+apache_error_documents_path : /usr/share/apache2/error
+
+apache_modules_packages     :
+  auth_cas    : libapache2-mod-auth-cas
+  auth_kerb   : libapache2-mod-auth-kerb
+  auth_mellon : libapache2-mod-auth-mellon
+  dav_svn     : libapache2-svn
+  fastcgi     : libapache2-mod-fastcgi
+  fcgid       : libapache2-mod-fcgid
+  geoip       : libapache2-mod-geoip
+  nss         : libapache2-mod-nss
+  pagespeed   : mod-pagespeed-stable
+  passenger   : libapache2-mod-passenger
+  perl        : libapache2-mod-perl2
+  php5        : libapache2-mod-php5
+  proxy_html  : libapache2-mod-proxy-html
+  python      : libapache2-mod-python
+  rpaf        : libapache2-mod-rpaf
+  security    : libapache2-modsecurity
+  shib2       : libapache2-mod-shib2
+  suphp       : libapache2-mod-suphp
+  wsgi        : libapache2-mod-wsgi
+  xsendfile   : libapache2-mod-xsendfile
+
+apache_embeded_modules:
+  - worker
+  - prefork
+  - peruser
+  - itk
+  - event
+  - deflate
+  - expires
+  - info
+  - status
+  - userdir
+  - mime
+  - mime_magic
+  - proxy
+  - proxy_ajp
+  - proxy_balancer
+  - proxy_connect
+  - proxy_fcgi
+  - proxy_ftp
+  - proxy_html
+  - proxy_wstunnel
+  - proxy_express
+  - proxy_fdpass
+  - proxy_http
+  - proxy_scgi
+  - ssl
+  - socache_shmcb
+
+apache_mod_cgid:
+  sock_path: '${APACHE_RUN_DIR}/cgisock'
+
+apache_mod_dav_fs:
+  dav_lock : '${APACHE_LOCK_DIR}/DAVLock'
+
+apache_mod_disk_cache:
+  root: '/var/cache/apache2/mod_cache_disk'
+
+apache_mod_fastcgi:
+  lib_path: '/var/lib/apache2/fastcgi'
+
+apache_mod_auth_cas:
+  cookie_path: '/var/cache/apache2/mod_auth_cas/'
+
+apache_mod_mime:
+   types_config   : '/etc/mime.types'
+   support_package: 'mime-support'
+
+apache_mod_ssl:
+  ssl_mutex     : 'default'
+  protocol      : [ 'all', '-SSLv2', '-SSLv3' ]
+  session_cache : '${APACHE_RUN_DIR}/ssl_scache(512000)'
+
+
+apache_mod_sec:
+    crs_package                 : 'modsecurity-crs'
+    crs_path                    : '/usr/share/modsecurity-crs'
+    dir                         : '/etc/modsecurity'
+    pcre_match_limit            : 1500
+    pcre_match_limit_recursion  : 1500
+    rule_engine                 : 'On'
+    default_rules :
+      - 'base_rules/modsecurity_35_bad_robots.data'
+      - 'base_rules/modsecurity_35_scanners.data'
+      - 'base_rules/modsecurity_40_generic_attacks.data'
+      - 'base_rules/modsecurity_41_sql_injection_attacks.data'
+      - 'base_rules/modsecurity_50_outbound.data'
+      - 'base_rules/modsecurity_50_outbound_malware.data'
+      - 'base_rules/modsecurity_crs_20_protocol_violations.conf'
+      - 'base_rules/modsecurity_crs_21_protocol_anomalies.conf'
+      - 'base_rules/modsecurity_crs_23_request_limits.conf'
+      - 'base_rules/modsecurity_crs_30_http_policy.conf'
+      - 'base_rules/modsecurity_crs_35_bad_robots.conf'
+      - 'base_rules/modsecurity_crs_40_generic_attacks.conf'
+      - 'base_rules/modsecurity_crs_41_sql_injection_attacks.conf'
+      - 'base_rules/modsecurity_crs_41_xss_attacks.conf'
+      - 'base_rules/modsecurity_crs_42_tight_security.conf'
+      - 'base_rules/modsecurity_crs_45_trojans.conf'
+      - 'base_rules/modsecurity_crs_47_common_exceptions.conf'
+      - 'base_rules/modsecurity_crs_49_inbound_blocking.conf'
+      - 'base_rules/modsecurity_crs_50_outbound.conf'
+      - 'base_rules/modsecurity_crs_59_outbound_blocking.conf'
+      - 'base_rules/modsecurity_crs_60_correlation.conf'

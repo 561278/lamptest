@@ -1,0 +1,179 @@
+---
+stages:
+- base
+- full
+
+before_script:
+  - bundle install > /dev/null
+
+after_script:
+  - kitchen destroy > /dev/null
+
+conf-wheezy:
+  stage: base
+  script:
+    - kitchen test conf.*debian-wheezy-*
+  except:
+    - tags
+
+conf-jessie:
+  stage: base
+  script:
+    - kitchen test conf.*debian-jessie-*
+  except:
+    - tags
+
+conf-stretch:
+  stage: base
+  script:
+    - kitchen test conf.*debian-stretch-*
+  except:
+    - tags
+
+conf-trusty:
+  stage: base
+  script:
+    - kitchen test conf.*ubuntu-trusty-*
+  except:
+    - tags
+
+# conf-xenial:
+#   stage: base
+#   script:
+#     - kitchen test conf.*ubuntu-trusty-*
+#   except:
+#     - tags
+
+empty-wheezy:
+  stage: base
+  script:
+    - kitchen test empty.*debian-wheezy-*
+  except:
+    - tags
+
+empty-jessie:
+  stage: base
+  script:
+    - kitchen test empty.*debian-jessie-*
+  except:
+    - tags
+
+empty-stretch:
+  stage: base
+  script:
+    - kitchen test empty.*debian-stretch-*
+  except:
+    - tags
+
+empty-trusty:
+  stage: base
+  script:
+    - kitchen test empty.*ubuntu-trusty-*
+  except:
+    - tags
+
+# empty-xenial:
+#   stage: base
+#   script:
+#     - kitchen test empty.*ubuntu-xenial-*
+#   except:
+#     - tags
+
+
+modules-wheezy:
+  stage: full
+  script:
+    - kitchen test modules.*debian-wheezy-*
+  except:
+    - tags
+
+modules-jessie:
+  stage: full
+  script:
+    - kitchen test modules.*debian-jessie-*
+  except:
+    - tags
+
+modules-stretch:
+  stage: full
+  script:
+    - kitchen test modules.*debian-stretch-*
+  except:
+    - tags
+
+modules-trusty:
+  stage: full
+  script:
+    - kitchen test modules.*ubuntu-trusty-*
+  except:
+    - tags
+
+# modules-xenial:
+#   stage: full
+#   script:
+#     - kitchen test modules.*ubuntu-xenial-*
+#   except:
+#     - tags
+
+mpm-wheezy:
+  stage: full
+  script:
+    - kitchen test mpm.*debian-wheezy-*
+  except:
+    - tags
+
+mpm-jessie:
+  stage: full
+  script:
+    - kitchen test mpm.*debian-jessie-*
+  except:
+    - tags
+
+mpm-trusty:
+  stage: full
+  script:
+    - kitchen test mpm.*ubuntu-trusty-*
+  except:
+    - tags
+
+# mpm-xenial:
+#   stage: full
+#   script:
+#     - kitchen test mpm.*ubuntu-xenial-*
+#   except:
+#     - tags
+
+vhost-wheezy:
+  stage: full
+  script:
+    - kitchen test vhost.*debian-wheezy-*
+  except:
+    - tags
+
+vhost-jessie:
+  stage: full
+  script:
+    - kitchen test vhost.*debian-jessie-*
+  except:
+    - tags
+
+vhost-stretch:
+  stage: full
+  script:
+    - kitchen test vhost.*debian-stretch-*
+  except:
+    - tags
+
+vhost-trusty:
+  stage: full
+  script:
+    - kitchen test vhost.*ubuntu-trusty-*
+  except:
+    - tags
+  
+#vhost-xenial:
+#  stage: full
+#  script:
+#    - kitchen test vhost.*ubuntu-xenial-*
+#  except:
+#    - tags

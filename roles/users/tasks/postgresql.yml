@@ -1,0 +1,67 @@
+---
+
+- name: Create PostgeSQL Databases
+  postgresql_db:
+    name              :  "{{ item.name }}"
+    owner             :  "{{ item.owner|default(users_postgresql_default.owner) }}"
+    encoding          :  "{{ item.encoding|default(users_postgresql_default.encoding) }}"
+    lc_collate        :  "{{ item.lc_collate|default(users_postgresql_default.lc_collate) }}"
+    lc_ctype          :  "{{ item.lc_ctype|default(users_postgresql_default.lc_ctype) }}"
+    port              :  "{{ item.port|default(users_postgresql_default.port) }}"
+    template          :  "{{ item.template|default(users_postgresql_default.template) }}"
+    state             :  present
+    login_host        :  '{{ item.login_host|default(omit) }}'
+    login_user        :  "{{ item.login_user|default(users_postgresql_default.admin_user) }}"
+    login_password    :  '{{ item.login_password|default(omit) }}'
+    login_unix_socket :  '{{ item.login_unix_socket|default(omit) }}'
+  become         :  yes
+  become_user    :  "{{ item.login_user|default(users_postgresql_default.admin_user) }}"
+  become_method  :  sudo
+  with_items     :  "{{users_postgresql.database}}"
+  no_log: "{{no_log|default(true)}}"
+  when           :  ((users_postgresql.database|length > 0 and ( item.name is defined and item.name != 'postgres')))
+
+
+- name: Manage PostgreSQL Users
+  postgresql_user:
+    port              :  '{{ item.login_port|default(users_postgresql_default.port) }}'
+    name              :  "{{ item.name }}"
+    db                :  "{{ item.database|default(omit) }}"
+    encrypted         :  "{{ item.encrypted|default(omit) }}"
+    password          :  "{{ item.password|default(omit) }}"
+    priv              :  "{{ item.priv|default([])|join('/') or omit }}"
+    role_attr_flags   :  "{{ item.role_attr_flags|default([])|join(',') or omit }}"
+    state             :  "{{ item.state|default('present') }}"
+    expires           :  "{{ item.expires|default('infinity') }}"
+    login_host        :  '{{ item.login_host|default(omit) }}'
+    login_user        :  "{{ item.login_user|default(users_postgresql_default.admin_user) }}"
+    login_password    :  '{{ item.login_password|default(omit) }}'
+    login_unix_socket :  '{{ item.login_unix_socket|default(omit) }}'
+  become         :  yes
+  become_user    :  "{{ item.login_user|default(users_postgresql_default.admin_user) }}"
+  become_method  :  sudo
+  no_log: "{{no_log|default(true)}}"
+  with_items     :  "{{users_postgresql.user}}"
+  when           : ((users_postgresql.user|length > 0 and ( item.name is defined and item.name != 'postgres')))
+
+- name: Grant/Revoke privileges on PostgreSQL database objects
+  postgresql_privs:
+    database          :  "{{ item.name }}"
+    schema            :  "{{ item.schema|default(omit) }}"
+    type              :  "{{ item.type|default(omit) }}"
+    objs              :  "{{ item.objs|default(omit) }}"
+    roles             :  "{{ item.roles|default('PUBLIC') }}"
+    grant_option      :  "{{ item.grant_option|default(omit) }}"
+    state             :  "{{ item.state|default('present') }}"
+    port              :  "{{ item.port|default(users_postgresql_default.port) }}"
+    priv              :  "{{ item.priv|default([])|join(',') or omit }}"
+    login_host        :  '{{ item.login_host|default(omit) }}'
+    login_user        :  "{{ item.login_user|default(users_postgresql_default.admin_user) }}"
+    login_password    :  '{{ item.login_password|default(omit) }}'
+    login_unix_socket :  '{{ item.login_unix_socket|default(omit) }}'
+  become         :  yes
+  become_user    :  "{{ item.login_user|default(users_postgresql_default.admin_user) }}"
+  become_method  :  sudo
+  no_log: "{{no_log|default(true)}}"
+  with_items     :  "{{users_postgresql.priv}}"
+  when           : ((users_postgresql.priv|length > 0 and ( item.name is defined)))

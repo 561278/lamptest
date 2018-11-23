@@ -1,0 +1,182 @@
+---
+driver:
+  name: docker
+  hostname: apache
+  privileged: true
+  use_sudo: false
+  cap_add:
+    - ALL
+
+transport:
+  max_ssh_sessions: 6
+
+provisioner:
+  name: ansible_playbook
+  idempotency_test: no
+  require_ansible_repo: false
+  require_chef_for_busser: false
+  require_ruby_for_busser: true
+  ansible_verbose: false
+  ansible_verbosity: 2
+  ansible_cfg_path: test/ansible.cfg
+  hosts: localhost
+  ignore_extensions_from_root: [".git",".idea",".kitchen.yml"]
+  ignore_paths_from_root: [".git",".idea",".kitchen"]
+  ansible_extra_flags: <%= ENV['ANSIBLE_EXTRA_FLAGS'] %>
+  recursive_additional_copy_path: test/integration/data
+
+platforms:
+  - name: debian-stretch-23
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:stretch-2.3
+
+  - name: debian-jessie-23
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:jessie-2.3
+      
+  - name: debian-wheezy-23
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:wheezy-2.3
+
+  - name: ubuntu-trusty-23
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:trusty-2.3
+    verifier:
+      ruby_bindir: '/usr/bin'
+
+#  - name: ubuntu-xenial-23
+#    driver_config:
+#      image: hub.alterway.fr/kitchen-ansible:xenial-2.3
+#    verifier:
+#      ruby_bindir: '/usr/bin'
+
+
+  - name: debian-stretch-24
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:stretch-2.4
+
+  - name: debian-jessie-24
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:jessie-2.4
+      
+  - name: debian-wheezy-24
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:wheezy-2.4
+
+  - name: ubuntu-trusty-24
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:trusty-2.4
+    verifier:
+      ruby_bindir: '/usr/bin'
+
+#  - name: ubuntu-xenial-24
+#    driver_config:
+#      image: hub.alterway.fr/kitchen-ansible:xenial-2.4
+#    verifier:
+#      ruby_bindir: '/usr/bin'
+
+
+verifier:
+  ruby_bindir: '/usr/local/rbenv/shims/'
+
+suites:
+  - name: empty
+    provisioner:
+      playbook: test/integration/empty.yml
+  - name: conf
+    provisioner:
+      playbook: test/integration/conf.yml
+  - name: mpm-worker
+    provisioner:
+      playbook: test/integration/empty.yml
+      extra_vars:
+        apache_mpm: worker
+  - name: mpm-worker-vars
+    provisioner:
+      playbook: test/integration/empty.yml
+      extra_vars:
+        apache_mpm: worker
+        apache_modules:
+          worker:
+            serverlimit: 30
+            startservers: 3
+            threadlimit: 69
+            minsparethreads: 40
+            maxsparethreads: 80
+            threadsperchild: 28
+            maxrequestworkers: 170
+            maxconnectionsperchild: 1001
+            maxclients: 160
+            maxrequestsperchild: 1000
+            listenbacklog: 510
+  - name: mpm-event
+    provisioner:
+      playbook: test/integration/empty.yml
+      extra_vars:
+        apache_mpm: event
+  - name: mpm-event-vars
+    provisioner:
+      playbook: test/integration/empty.yml
+      extra_vars:
+        apache_mpm: event
+        apache_modules:
+          event:
+            serverlimit: 30
+            startservers: 3
+            minsparethreads: 40
+            maxsparethreads: 80
+            threadsperchild: 28
+            threadlimit: 69
+            listenbacklog: 510
+            maxclients: 160
+            maxrequestsperchild: 1000
+            maxrequestevents: 170
+            maxconnectionsperchild: 1001
+  - name: mpm-prefork
+    provisioner:
+      playbook: test/integration/empty.yml
+      extra_vars:
+        apache_mpm: prefork
+  - name: mpm-prefork-vars
+    provisioner:
+      playbook: test/integration/empty.yml
+      extra_vars:
+        apache_mpm: prefork
+        apache_modules:
+          prefork:
+            startservers: 4
+            minspareservers: 34
+            maxspareservers: 78
+            serverlimit: 28
+            maxclients: 160
+            maxrequestsperchild: 1000
+            maxrequestworkers: 170
+            maxconnectionsperchild: 1001
+            listenbacklog: 510
+  - name: mpm-itk
+    provisioner:
+      playbook: test/integration/empty.yml
+      extra_vars:
+        apache_mpm: itk
+  - name: mpm-itk-vars
+    provisioner:
+      playbook: test/integration/empty.yml
+      extra_vars:
+        apache_mpm: itk
+        apache_modules:
+          itk:
+            startservers: 4
+            minspareservers: 34
+            maxspareservers: 78
+            serverlimit: 28
+            maxclients: 151
+            maxrequestsperchild: 4
+  - name: vhost
+    provisioner:
+      playbook: test/integration/vhost.yml
+  - name: modules
+    provisioner:
+      playbook: test/integration/modules.yml
+  - name: modules-vars
+    provisioner:
+      playbook: test/integration/modules-vars.yml

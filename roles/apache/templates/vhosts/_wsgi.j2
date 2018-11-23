@@ -1,0 +1,31 @@
+{% if item.value.wsgi['application_group'] is defined %}
+WSGIApplicationGroup {{ item.value.wsgi['application_group'] }}
+{% endif %}
+{% if item.value.wsgi['daemon_process'] is defined %}
+{% if item.value.wsgi['daemon_process']['name'] is defined %}
+WSGIDaemonProcess {{ item.value.wsgi['daemon_process']['name'] }} {% if item.value.wsgi['daemon_process']['options'] is defined %}{% for key in item.value.wsgi['daemon_process']['options'] %} {{ key }}={{ item.value.wsgi['daemon_process']['options'][key] }} {% endfor %}{% endif %}
+
+{% endif %}
+{% endif %}
+{% if item.value.wsgi['import_script'] is defined %}
+{% if item.value.wsgi['import_script']['path'] is defined and item.value.wsgi['import_script']['options'] is defined %}
+WSGIImportScript {{ item.value.wsgi['import_script']['path'] }} {% for key in item.value.wsgi['import_script']['options'] %} {{ key }}={{ item.value.wsgi['import_script']['options'][key] }} {% endfor %}
+{% endif %}
+{% endif %}
+
+{% if item.value.wsgi['process_group'] is defined %}
+WSGIProcessGroup {{ item.value.wsgi['process_group'] }}
+{% endif %}
+{% if item.value.wsgi['script_aliases'] is defined %}
+{% for key in item.value.wsgi['script_aliases'] %}
+{% if key != '' and item.value.wsgi['script_aliases'][key] != '' %}
+WSGIScriptAlias {{ key }} "{{ item.value.wsgi['script_aliases'][key] }}"
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if item.value.wsgi['pass_authorization'] is defined %}
+WSGIPassAuthorization {{ item.value.wsgi['pass_authorization'] }}
+{% endif %}
+{% if item.value.wsgi['chunked_request'] is defined %}
+WSGIChunkedRequest {{ item.value.wsgi['chunked_request'] }}
+{% endif %}

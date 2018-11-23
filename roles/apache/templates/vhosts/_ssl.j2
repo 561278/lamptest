@@ -1,0 +1,50 @@
+SSLEngine on
+{% if item.value.ssl['autosigned'] is defined %}
+   {% set cert = item.value.ssl['certs_dir']|default(apache_ssl_certs_dir) + '/' + item.value.servername|default(item.key) + '.crt'  %}
+   {% set key  = item.value.ssl['certs_dir']|default(apache_ssl_certs_dir) + '/' + item.value.servername|default(item.key) + '.key'  %}
+{% else %}
+   {% set cert =  item.value.ssl['cert'] %}
+   {% set key  =  item.value.ssl['key']  %}
+{% endif %}
+
+SSLCertificateFile      "{{ cert }}"
+SSLCertificateKeyFile   "{{ key }}"
+{% if item.value.ssl['chain'] is defined %}
+SSLCertificateChainFile "{{ item.value.ssl['chain'] }}"
+{% endif %}
+{% if item.value.ssl['certs_dir'] is defined and item.value.ssl['certs_dir'] != '' %}
+SSLCACertificatePath    "{{ item.value.ssl['certs_dir'] }}"
+{% endif %}
+{% if item.value.ssl['ca'] is defined %}
+SSLCACertificateFile    "{{ item.value.ssl['ca'] }}"
+{% endif %}
+{% if item.value.ssl['crl_path'] is defined %}
+SSLCARevocationPath     "{{ item.value.ssl['crl_path'] }}"
+{% endif %}
+{% if item.value.ssl['crl'] is defined %}
+SSLCARevocationFile     "{{ item.value.ssl['crl'] }}"
+{% endif %}
+{% if item.value.ssl['crl_check'] is defined and apache_version.split('.')[1] == '4' %}
+SSLCARevocationCheck    "{{ item.value.ssl['crl_check'] }}"
+{% endif %}
+{% if item.value.ssl['protocol'] is defined %}
+SSLProtocol             {{ item.value.ssl['protocol']|join(' ') }}
+{% endif %}
+{% if item.value.ssl['cipher'] is defined %}
+SSLCipherSuite          {{ item.value.ssl['cipher'] }}
+{% endif %}
+{% if item.value.ssl['honorcipherorder'] is defined %}
+SSLHonorCipherOrder     {{ item.value.ssl['honorcipherorder'] }}
+{% endif %}
+{% if item.value.ssl['verify_client'] is defined %}
+SSLVerifyClient         {{ item.value.ssl['verify_client'] }}
+{% endif %}
+{% if item.value.ssl['verify_depth'] is defined %}
+SSLVerifyDepth          {{ item.value.ssl['verify_depth'] }}
+{% endif %}
+{% if item.value.ssl['options'] is defined %}
+SSLOptions {{ item.value.ssl['options']|join(' ') }}
+{% endif %}
+{% if item.value.ssl['openssl_conf_cmd'] is defined %}
+# SSLOpenSSLConfCmd       {{ item.value.ssl['openssl_conf_cmd'] }}
+{% endif %}

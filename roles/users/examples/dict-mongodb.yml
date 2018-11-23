@@ -1,0 +1,18 @@
+---
+# Exemple de dictionnaires de données mongodb
+
+users_mongodb:
+  user:
+    - name: sabrewulf
+      database: combo
+      password: 'C8XR6FgsK9nME'
+      roles:
+        - readWrite
+        - readAnyDatabase
+    - name: raiden
+      database: spinal
+      password: 'C8XR6FgsK9nME'
+      roles:
+        - readWrite
+        - dbAdmin
+        - readAnyDatabase

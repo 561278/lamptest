@@ -1,0 +1,70 @@
+{% set timeout = ' -idle-timeout ' + item.value['fastcgi'].timeout|default('30')|string -%}
+{% set flush = ' -flush' -%}
+{% if item.value['fastcgi'].flush is defined and not item.value['fastcgi'].flush -%}
+    {% set flush = '' -%}
+{% endif -%}
+
+{% set host_or_socket = ' -socket /var/run/php5-fpm.sock' -%}
+{% if item.value['fastcgi'].socket is defined -%}
+    {% set host_or_socket = ' -socket ' + item.value['fastcgi'].socket -%}
+{% elif item.value['fastcgi'].host is defined -%}
+    {% set host_or_socket = ' -host ' + item.value['fastcgi'].host -%}
+{% endif -%}
+
+{% set pass_header = ' -pass-header Authorization' -%}
+{% if  item.value['fastcgi'].pass_header is defined -%}
+    {% set pass_header =  ' -pass-header ' + item.value['fastcgi'].pass_header -%}
+{% endif -%}
+
+{% set options = timeout + flush + host_or_socket + pass_header -%}
+
+{% set file_type = 'application/x-httpd-php' + '-' + item.key -%}
+{% if item.value['fastcgi'].file_type is defined -%}
+      {% set file_type = item.value['fastcgi'].file_type -%}
+{% endif -%}
+
+{% set virtual_path = '/fastcgi-pool-' + item.key -%}
+{% if item.value['fastcgi'].virtual_path is defined -%}
+    {% set virtual_path = item.value['fastcgi'].virtual_path -%}
+{% endif -%}
+
+{% set alias = '/usr/lib/cgi-bin/' + item.key  -%}
+{% if item.value['fastcgi'].alias is defined -%}
+        {% set alias = item.value['fastcgi'].alias -%}
+{% endif -%}
+
+<IfModule mod_fastcgi.c>
+          FastCGIExternalServer {{ virtual_path }}{{ options }}
+          Alias  {{ alias }} {{ virtual_path }}
+          Action {{ file_type }} {{ alias }}
+          AddType {{ file_type }} {{ file_ext|default(".php") }}
+          {% if item.value['fastcgi'].fpm is defined -%}
+             {% set status = 'fpm-status' -%}
+             {% set ping = 'fpm-ping' -%}
+
+             {% if item.value['fastcgi'].fpm.status is defined -%}
+                {% set status = item.value['fastcgi'].fpm.status -%}
+             {% endif -%}
+
+             {% if item.value['fastcgi'].fpm.ping is defined -%}
+                {% set ping = item.value['fastcgi'].fpm.ping -%}
+             {% endif -%}
+
+             {% set status_ping = status + '|' + ping -%}
+
+          <LocationMatch "/({{ status_ping }})">
+              RewriteEngine Off
+              SetHandler php-fcgi-virt
+              Action php-fcgi-virt {{ alias }} virtual
+              {% if apache_version.split('.')[1] == '4' -%}
+              Require all granted
+              {% else -%}
+              Order Deny,Allow
+              Deny from All
+              Allow from {{ item.value['fastcgi'].fpm.allow|default('127.0.0.1') }}
+              {% endif %}
+
+          </LocationMatch>
+          {% endif -%}
+          AllowEncodedSlashes On
+</IfModule>

@@ -1,0 +1,7 @@
+.DS_Store
+.vagrant
+test/.vagrant
+files/debian.cnf
+.kitchen/
+Dockerfile-kitchen*
+Gemfile.lock

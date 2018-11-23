@@ -1,0 +1,171 @@
+---
+## Playsbook d'exemples :: Ne pas appliquer sans adapter sauf pour tests
+
+- hosts: users_hosts
+      no_log: True  ## On log pas car des info sensibles transitent.
+      user: ansible
+      gather_facts: yes
+      sudo: True
+
+      roles:
+       - users
+      vars:
+        users_system:
+          group:
+            - name: awh
+              state: present
+              system: no
+              gid: 1005
+            - name: deploy
+              state: present
+            - name: devops
+              state: present
+            - name: combo
+              state: present
+            - name: fatality
+            - name: raptor
+            - name: cortex
+          user:
+            - name: helldorado
+              group: helldorado
+              groups: adm,deploy,cortex
+              append: yes
+              uid: 1300
+              comment: 'Compte Admin'
+              password: '$6$rounds=656000$JF8tFeeiJD50ELTt$Y1xrYwo8/XlfEu1gzwtvcLubehyAEtv5aLOwPff9TUABwkL.0UbPJLKebyBYy3ScuB0f/U6Gd/b.tgSL8Fr4Y0'
+              home: '/home/hell'
+              createhome: yes
+              generate_ssh_key: yes
+              ssh_key_passphrase: 'Si Java avait un vrai garbage collector (collecteur de dechets, ndt), la plupart des programmes se supprimeraient eux-memes lors de l execution'
+              authorized_keys:
+                - 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCw/7e44AMATsCIqCdQaehYc84L+DYOZMA29pJ9JQLPGdMrfr0rQKAGsWp7uLSKIHlZYQx40XAjo5oW2ge6pvizaOaOK3sn4ddfI0n1kTyfV2lNYrbxHjtcUL0QOQxxL/7HL8m5JyLCekDg3XiiwoBTyNC9gSyMbPKoFy+nlJpjxpju5AOBxM5xOiEzfzJsULHyuFP+ZxQ9GwvLOuXGg9BotYA/jPJFTGG95t4HK+SvJ1CMHpamFJr4OXVxtSTRbMhvlP3Zd+3pwGr8pZc/JhYP5mrBxQ/QwHc/pzeYJv62ocuOXv70+hDn453Bml4FcKz2yrZBAYWkydkIU511k/3N helldorado@spynol.local
+                    '
+                - 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDPE3Jk66nKUMp0m0mgEpougo/qCUrW+ZDQHb8w+2QQiw/t5xJk0uhnkT1TPcNk+5Mdmjx264gHh/nAk0XgG1jhsSKlPzkgAcyBNw89tLKESkMvh2DlYzmvqG5b/YiQ8BPPBB+2ghxpoUixDPaJQS7Mr/BgkAWXN28oLNsFkhY1gCdWUHDH1XhXQsRYsZtw0TbAz/j+oOu233Hq/J9UB9w2UuGLr9z1cQY516vBSblrpfNjDWfmwLHENoeqZTsqFiivgYjMVc2RjLwgLM1ORJopfay0Gj7q9xz9hidUwqyyL7OkIK/FYA32JmT4REYr7d0uEwTm0zAfWG+ab4rKWNnB helldorado@spynol.local
+                    '
+              sudo:
+                nopasswd: yes
+                requiretty: yes
+                user: ALL
+                commands:
+                  - '/etc/init.d/apache2'
+                  - '/usr/bin/vim /usr/share/tomcat5/*'
+                  - '/usr/sbin/apache2ctl'
+
+        users_mysql:
+          database:
+            - name: spinal
+              collation: utf8_general_ci
+              encoding : utf8
+            - name: fulgor
+            - name: smoke
+            - name: kitana
+              encoding : utf8
+            - name: cyrax
+              collation: latin1_swedish_ci
+          user:
+            - name: sabrewulf
+              password: 'C8XR6FgsK9nME'
+              priv:
+                - 'spinal.*:SELECT,INSERT'
+                - 'fulgor.user:ALL'
+              append_privs: yes
+            - name: raiden
+              password: 'AydPLY1GOSPAA'
+              priv:
+                - 'kitana.*:ALL'
+                - 'cyrax.*:ALL'
+              append_privs: yes
+
+        users_postgresql:
+          database:
+            - name: db_glacius
+              encoding: UTF-8
+              lc_collate: en_US.UTF-8
+              lc_ctype: en_US.UTF-8
+            - name: db_jago
+            - name: db_orchid
+            - name: db_spinal
+          user:
+            - name: glacius
+              password: 'C8XR6FgsK9nME'
+              database: db_glacius
+              priv:
+                - CONNECT
+                - products:SELECT
+                - users:ALL
+                - name: raiden
+              encrypted: true
+              password: 'md5d011966da94d776cf59bf6dbde240e5d'
+              expires: infinity
+              role_attr_flags:
+                - CREATEDB
+                - NOSUPERUSER
+                - CREATEROLE
+            - name: sabrewulf
+              encrypted: true
+              password: 'md5d011966da94d776cf59bf6dbde240e5d'
+              database: db_glacius
+              expires: "August 25 12:00:00 2016 +1"
+              priv:
+                - 'ALL'
+                - 'creditcard:SELECT'
+                - name: spinal
+              encrypted: true
+              password: 'md5d011966da94d776cf59bf6dbde240e5d'
+              database: db_spinal
+              expires: infinity
+              priv:
+                - 'ALL'
+            - name: jago
+              encrypted: true
+              password: 'md5d011966da94d776cf59bf6dbde240e5d'
+              expires: infinity
+          priv:
+              # On database "db_orchid":
+              # GRANT SELECT, INSERT, UPDATE ON TABLE public.books, public.authors public.users
+              # TO glacius,admin,spinal WITH GRANT OPTION
+            - name: db_orchid
+              priv:
+                - 'SELECT,INSERT,UPDATE'
+              type: table
+              objs: 'books,authors,users'
+              schema: public
+              roles: "glacius,raiden,spinal"
+              grant_option: yes
+
+            # GRANT ALL PRIVILEGES ON DATABASE db_jago TO jago
+            # Note that here "db=postgres" specifies the database to connect to, not the
+            # database to grant privileges on (which is specified via the "objs" param)
+            - name: postgres
+              priv:
+                - 'ALL'
+              type: database
+              objs: db_jago
+              roles: jago
+              grant_option: yes
+
+            # GRANT admin, combo TO spinal, glacius WITH ADMIN OPTION
+            # Note that group role memberships apply cluster-wide and therefore are not
+            # restricted to database "db_glacius" here.
+            - name: db_glacius
+              state           : present
+              type            : group
+              objs            : "raiden,sabrewulf"
+              roles           : "spinal,glacius"
+              admin_option    : yes
+
+        users_mongodb:
+          user:
+            - name: sabrewulf
+              database: combo
+              password: 'C8XR6FgsK9nME'
+              roles:
+                - readWrite
+                - readAnyDatabase
+            - name: raiden
+              database: spinal
+              password: 'C8XR6FgsK9nME'
+              roles:
+                - readWrite
+                - dbAdmin
+                - readAnyDatabase

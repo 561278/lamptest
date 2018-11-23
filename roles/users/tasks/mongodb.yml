@@ -1,0 +1,19 @@
+---
+- name: Manage MongoDB Users
+  mongodb_user:
+    name              :  "{{ item.name }}"
+    database          :  "{{ item.database }}"
+    password          :  "{{ item.password|default(omit) }}"
+    update_password   :  "{{ item.update_password|default(omit) }}"
+    login_host        :  "{{ item.login_host|default(omit) }}"
+    login_user        :  "{{ item.login_user|default(omit) }}"
+    login_password    :  "{{ item.login_password|default(omit) }}"
+    login_database    :  "{{ item.login_database|default(omit) }}"
+    login_port        :  "{{ item.login_port|default(omit) }}"
+    replica_set       :  "{{ item.replica_set|default(omit) }}"
+    roles             :  "{{ item.roles|default([])|join(',') or omit }}"
+    ssl               :  "{{ item.ssl|default(omit) }}"
+    state             :  "{{ item.state|default('present') }}"
+  with_items  : "{{users_mongodb.user}}"
+  no_log: "{{no_log|default(true)}}"
+  when        : users_mongodb.user|length > 0

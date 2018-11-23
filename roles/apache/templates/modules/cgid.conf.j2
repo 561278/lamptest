@@ -1,0 +1,5 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+ScriptSock "{{ apache_modules['cgid'].sock_path|default(apache_mod_cgid['sock_path']) }}"

@@ -1,0 +1,15 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+<IfModule mpm_itk_module>
+          {% if apache_modules['itk'].raw is defined -%}
+          {{ apache_modules['itk'].raw }}
+          {% endif -%}
+          StartServers        {{ apache_modules['itk'].startservers|default('2') }}
+          MinSpareServers     {{ apache_modules['itk'].minspareservers|default('25') }}
+          MaxSpareServers     {{ apache_modules['itk'].maxspareservers|default('75') }}
+          ServerLimit         {{ apache_modules['itk'].serverlimit|default('25') }}
+          MaxClients          {{ apache_modules['itk'].maxclients|default('150') }}
+          MaxRequestsPerChild {{ apache_modules['itk'].maxrequestsperchild|default('0') }}
+</IfModule>

@@ -1,0 +1,16 @@
+---
+- src: git+ssh://git@git.alterway.fr/ansibleroles/awh-apache.git
+  version: 2.1.21
+  name: apache
+
+- src: git+ssh://git@git.alterway.fr/ansibleroles/awh-mysql.git
+  version: 1.0.28
+  name: mysql
+
+- src: git+ssh://git@git.alterway.fr/ansibleroles/awh-users.git
+  version: 1.0.9
+  name: users
+
+- src: git+ssh://git@git.alterway.fr/ansibleroles/awh-php.git
+  version: 2.0.13
+  name: php

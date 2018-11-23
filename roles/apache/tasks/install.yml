@@ -1,0 +1,6 @@
+---
+
+- name: install apache mpm
+  apt:
+    name            : "{{ apache_mpm_prefix }}{{ apache_mpm }}"
+    state           : present

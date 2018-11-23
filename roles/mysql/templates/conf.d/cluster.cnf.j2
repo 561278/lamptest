@@ -1,0 +1,29 @@
+# {{ ansible_managed }}
+#
+[mysqld]
+wsrep_on                    = {{ mysql_wsrep_on }}
+wsrep_provider              = {{ mysql_wsrep_provider }}
+wsrep_provider_options      = "{{ mysql_wsrep_provider_options }}"
+wsrep_replicate_myisam      = {{ mysql_wsrep_replicate_myisam }}
+wsrep_sst_method            = {{ mysql_wsrep_sst_method }}
+wsrep_node_address          = {{ mysql_wsrep_node_address }}
+{% if mysql_wsrep_sst_method  in ['xtrabackup','xtrabackup-v2'] %}
+wsrep_sst_auth              = '{{ mysql_wsrep_sst_auth }}'
+{% endif %}
+wsrep_slave_threads         = {{ mysql_wsrep_slave_threads }}
+wsrep_cluster_name          = "{{ mysql_wsrep_cluster_name }}"
+wsrep_cluster_address       = "{{ mysql_wsrep_cluster_address }}"
+{% if mysql_wsrep_slave_threads > 1 %}
+innodb_autoinc_lock_mode    = 2
+{% endif %}
+{% for key in mysql_wsrep_raw %}
+{{ key }}                   = {{ mysql_wsrep_raw[key] }}
+{% endfor %}
+
+
+{% if mysql_provider|string == 'mariadb' %}
+log_bin                        = {{ mysql_log_bin }}
+binlog_format                  = {{ mysql_binlog_format }}
+expire_logs_days               = {{ mysql_expire_logs_days }}
+max_binlog_size                = {{ mysql_max_binlog_size }}
+{% endif %}

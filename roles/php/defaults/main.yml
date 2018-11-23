@@ -1,0 +1,120 @@
+---
+# version of php - x.x or x.x.x
+php_version: '5.6'
+
+# sapi of php : cli or fpm or apache
+php_sapi : 'cli'
+
+# php modules list packages
+php_modules : []
+
+# sites
+php_sites : []
+
+# php.ini - override php_fpm_default
+php_ini : {}
+
+# php.ini - cli : override php_ini -> override php_fpm_default
+php_ini_cli : {}
+
+# php-fpm configuration
+php_fpm : []
+
+# php-fpm pools configuration
+php_fpm_pools:
+  # declare default pools
+  - name: www
+
+# custom repository
+php_repo : {}
+
+# force configure sapi apache
+php_mod_php : False
+
+# default - php-fpm.conf & php-pfm pools
+php_fpm_default:
+  pid : '/run/{{php_prefix}}-fpm.pid'
+  error_log : '/var/log/{{php_prefix}}-fpm.log'
+  syslog_facility : 'daemon'
+  syslog_ident : 'php-fpm'
+  log_level : 'error'
+  sockdir : '/var/run'
+  emergency_restart_threshold : '0'
+  emergency_restart_interval : '0'
+  process_control_timeout : '0'
+  daemonize : 'yes'
+  rlimit_files : '1024'
+  user : '{% if ansible_os_family == "RedHat" %}apache{% else %}www-data{% endif %}'
+  listen_owner : '{% if ansible_os_family == "RedHat" %}apache{% else %}www-data{% endif %}'
+  listen_mode : '0660'
+  pm : 'dynamic'
+  pm_max_children : '50'
+  pm_start_servers : '5'
+  pm_min_spare_servers : '5'
+  pm_max_spare_servers : '35'
+  pm_process_idle_timeout : '10s'
+  pm_max_requests : '200'
+  pm_status_path : '/fpm-status'
+  ping_path : '/ping'
+  ping_response : 'pong'
+  request_slowlog_timeout : '0'
+  request_terminate_timeout : '0'
+  catch_workers_output : 'yes'
+
+# default - php.ini
+php_ini_default:
+  post_max_size : '8M'
+  memory_limit : '128M'
+  date.timezone : 'Europe/Paris'
+  display_errors : 'Off'
+  allow_url_fopen : 'Off'
+  allow_url_include: 'Off'
+  expose_php : 'Off'
+  disable_functions : '{{php_ini_disable_functions|join(",")}}'
+  #logging
+  log_errors: 'On'
+  error_log : '/var/log/{{php_prefix}}-fpm.log'
+  error_reporting: 'E_ALL & ~E_DEPRECATED & ~E_STRICT'
+  #opcache
+  opcache.enabled : '1'
+  opcache.enable_cli : '0'
+  opcache.memory_consumption : '64'
+  opcache.interned_strings_buffer: '16'
+  opcache.max_accelerated_files: '4096'
+  #apc
+  apc.enabled : '0'
+  apc.enable_cli : '0'
+  apc.shm_size : '64M'
+
+php_ini_disable_functions :
+  - pcntl_alarm
+  - pcntl_fork
+  - pcntl_waitpid
+  - pcntl_wait
+  - pcntl_wifexited
+  - pcntl_wifstopped
+  - pcntl_wifsignaled
+  - pcntl_wexitstatus
+  - pcntl_wtermsig
+  - pcntl_wstopsig
+  - pcntl_signal
+  - pcntl_signal_dispatch
+  - pcntl_get_last_error
+  - pcntl_strerror
+  - pcntl_sigprocmask
+  - pcntl_sigwaitinfo
+  - pcntl_sigtimedwait
+  - pcntl_exec
+  - pcntl_getpriority
+  - pcntl_setpriority
+
+# explode version
+php_version_string   : '{{php_version|string}}'
+php_version_major    : '{{php_version_string.split(".")[0]|int}}'
+php_version_minor    : '{{php_version_string.split(".")[1]|int}}'
+php_version_revision : '{{php_version_string.split(".")[2]|default()}}'
+
+# pinning
+php_pin_version: '{{php_version_major}}.{{php_version_minor}}.{{php_version_revision|default()}}*'
+php_pin_priority: '990'
+php_pkg_state: present

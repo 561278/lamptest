@@ -1,0 +1,329 @@
+---
+- hosts: localhost
+  become: true
+
+  vars:
+    users_system:
+      group:
+        - name: awh
+          state: present
+          system: no
+          gid: 1005
+        - name: deploy
+          state: present
+        - name: devops
+          state: present
+        - name: combo
+          state: present
+        - name: fatality
+        - name: raptor
+        - name: cortex
+      user:
+        - name: helldorado
+          group: helldorado
+          groups:
+            - awh
+            - deploy
+            - cortex
+          append: yes
+          uid: 1300
+          comment: 'Compte Admin'
+          password: '$6$rounds=656000$JF8tFeeiJD50ELTt$Y1xrYwo8/XlfEu1gzwtvcLubehyAEtv5aLOwPff9TUABwkL.0UbPJLKebyBYy3ScuB0f/U6Gd/b.tgSL8Fr4Y0'
+          home: '/home/hell'
+          createhome: yes
+          generate_ssh_key: yes
+          ssh_key_passphrase: 'Si Java avait un vrai garbage collector (collecteur de dechets, ndt), la plupart des programmes se supprimeraient eux-memes lors de l execution'
+          authorized_keys:
+            - 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCw/7e44AMATsCIqCdQaehYc84L+DYOZMA29pJ9JQLPGdMrfr0rQKAGsWp7uLSKIHlZYQx40XAjo5oW2ge6pvizaOaOK3sn4ddfI0n1kTyfV2lNYrbxHjtcUL0QOQxxL/7HL8m5JyLCekDg3XiiwoBTyNC9gSyMbPKoFy+nlJpjxpju5AOBxM5xOiEzfzJsULHyuFP+ZxQ9GwvLOuXGg9BotYA/jPJFTGG95t4HK+SvJ1CMHpamFJr4OXVxtSTRbMhvlP3Zd+3pwGr8pZc/JhYP5mrBxQ/QwHc/pzeYJv62ocuOXv70+hDn453Bml4FcKz2yrZBAYWkydkIU511k/3N helldorado@spynol.local
+            '
+            - 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDPE3Jk66nKUMp0m0mgEpougo/qCUrW+ZDQHb8w+2QQiw/t5xJk0uhnkT1TPcNk+5Mdmjx264gHh/nAk0XgG1jhsSKlPzkgAcyBNw89tLKESkMvh2DlYzmvqG5b/YiQ8BPPBB+2ghxpoUixDPaJQS7Mr/BgkAWXN28oLNsFkhY1gCdWUHDH1XhXQsRYsZtw0TbAz/j+oOu233Hq/J9UB9w2UuGLr9z1cQY516vBSblrpfNjDWfmwLHENoeqZTsqFiivgYjMVc2RjLwgLM1ORJopfay0Gj7q9xz9hidUwqyyL7OkIK/FYA32JmT4REYr7d0uEwTm0zAfWG+ab4rKWNnB helldorado@spynol.local
+            '
+          sudo:
+            nopasswd: yes
+            requiretty: yes
+            user: 'helldorado, test'
+            defaults:
+              - secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+              - syslog=auth
+            commands:
+               - '/etc/init.d/mysql restart'
+               - '/etc/init.d/postgresql restart'
+        - name: test
+          group: test
+          append: yes
+          uid: 1301
+          comment: 'Compte Test'
+          password: '$6$rounds=656000$JF8tFeeiJD50ELTt$Y1xrYwo8/XlfEu1gzwtvcLubehyAEtv5aLOwPff9TUABwkL.0UbPJLKebyBYy3ScuB0f/U6Gd/b.tgSL8Fr4Y0'
+          home: '/home/test'
+          createhome: yes
+          sudo:
+            nopasswd: yes
+            requiretty: no
+            user: 'helldorado, test'
+            groups: 'helldorado'
+            defaults:
+              - 'mail_badpass'
+              - 'env_reset'
+              - '!requiretty'
+            commands:
+               - '/bin/ls'
+               - '/usr/bin/su [!-]*'
+               - '!/usr/bin/su *root*'
+        - name: combo
+          group: combo
+          append: yes
+          password: '$6$rounds=656000$JF8tFeeiJD50ELTt$Y1xrYwo8/XlfEu1gzwtvcLubehyAEtv5aLOwPff9TUABwkL.0UbPJLKebyBYy3ScuB0f/U6Gd/b.tgSL8Fr4Y0'
+          createhome: yes
+          sudo:
+            nopasswd: yes
+            defaults:
+              - 'mail_badpass'
+            runas_alias:
+              - 'OP= root, operator'
+              - 'DB= oracle, sybase'
+            cmnd_alias:
+              - |-
+                DUMPS = /usr/bin/mt, /usr/sbin/dump, /usr/sbin/rdump,\
+                                       /usr/sbin/restore, /usr/sbin/rrestore,\
+                                       sha224:0GomF8mNN3wlDt1HD9XldjJ3SNgpFdbjO1+NsQ== \
+                                       /home/operator/bin/start_backup
+              - |-
+                SHELLS = /usr/bin/sh, /usr/bin/csh, /usr/bin/ksh,\
+                                        /usr/local/bin/tcsh, /usr/bin/rsh,\
+                                        /usr/local/bin/zsh
+              - KILL = /usr/bin/kill, /sbin/halt
+            commands:
+               - DUMPS
+               - KILL
+               - SHELLS
+            append: |
+                    %combo ALL=(ALL:ALL) NOPASSWD: DUMPS
+        - name: spinal
+          group: combo
+          append: yes
+          password: '$6$rounds=656000$JF8tFeeiJD50ELTt$Y1xrYwo8/XlfEu1gzwtvcLubehyAEtv5aLOwPff9TUABwkL.0UbPJLKebyBYy3ScuB0f/U6Gd/b.tgSL8Fr4Y0'
+          createhome: yes
+          sudo:
+            content: |
+                     # Ansible managed
+
+                     Defaults:combo mail_badpass
+                     Runas_Alias    SYSADMIN= root, operator
+                     Runas_Alias    DBAMAIN= oracle, sybase
+                     Cmnd_Alias     DBDUMPS = /usr/bin/mt, /usr/sbin/dump, /usr/sbin/rdump,\
+                                            /usr/sbin/restore, /usr/sbin/rrestore,\
+                                            /home/operator/bin/start_backup
+                     Cmnd_Alias     SERVICES = /etc/init.d/apache2 re*, /etc/init.d/nginx re*
+
+                     combo ALL=(ALL:ALL) NOPASSWD: DBDUMPS, SERVICES
+            state: present
+        - name: ikora
+          group: ikora
+          append: yes
+          sudo:
+            template: test/datas/sudoers.d/ikora.j2
+
+    users_mysql:
+      database:
+        - name: spinal
+          collation: utf8_general_ci
+          encoding : utf8
+        - name: fulgor
+        - name: smoke
+        - name: kitana
+          encoding : utf8
+        - name: cyrax
+          collation: latin1_swedish_ci
+      user:
+        - name: sabrewulf
+          password: 'C8XR6FgsK9nME'
+          host:
+            - 127.0.0.1
+            - 10.0.1.%
+            - localhost
+          priv:
+            - 'spinal.*:SELECT,INSERT'
+            - 'fulgor.user:ALL'
+          append_privs: yes
+        - name: raiden
+          password: 'AydPLY1GOSPAA'
+          host: [localhost, 127.0.0.1, 10.0.16.%]
+          priv:
+            - 'kitana.*:ALL'
+            - 'cyrax.*:ALL'
+          append_privs: yes
+        - name: beastie
+          password: '*02327FF7844C866C43469F64FE2CAC022C8FBD22' ## Genéré via python -c ‘from hashlib import sha1; import getpass; print “*” + sha1(sha1(getpass.getpass(“New MySQL Password:”)).digest()).hexdigest()’
+          host:
+            - localhost
+          encrypted: yes
+          priv:
+            - 'foobar.*:ALL'
+          append_privs: yes
+
+    users_postgresql:
+      database:
+        - name: db_glacius
+          encoding: UTF-8
+          lc_collate: en_US.UTF-8
+          lc_ctype: en_US.UTF-8
+        - name: db_jago
+        - name: db_orchid
+        - name: db_spinal
+      user:
+        - name: glacius
+          password: 'C8XR6FgsK9nME'
+          database: db_glacius
+          priv:
+            - 'CONNECT'
+        - name: raiden
+          encrypted: true
+          password: 'md5d011966da94d776cf59bf6dbde240e5d'
+          expires: infinity
+          role_attr_flags:
+            - 'CREATEDB'
+            - 'NOSUPERUSER'
+            - 'CREATEROLE'
+        - name: spinal
+          encrypted: true
+          password: 'md5d011966da94d776cf59bf6dbde240e5d'
+          database: db_spinal
+          expires: infinity
+          priv:
+            - 'ALL'
+        - name: jago
+          encrypted: true
+          password: 'md5d011966da94d776cf59bf6dbde240e5d'
+          expires: infinity
+      priv:
+        # On database "db_orchid":
+        # GRANT SELECT, INSERT, UPDATE ON TABLE public.books, public.authors public.users
+        # TO glacius,admin,spinal WITH GRANT OPTION
+        # - name: db_orchid
+        #   priv:
+        #     - 'SELECT,INSERT,UPDATE'
+        #   type: table
+        #   objs: 'books,authors,users'
+        #   schema: public
+        #   roles: "glacius,raiden,spinal"
+        #   grant_option: yes
+
+        # GRANT ALL PRIVILEGES ON DATABASE db_jago TO jago
+        # Note that here "db=postgres" specifies the database to connect to, not the
+        # database to grant privileges on (which is specified via the "objs" param)
+        - name: postgres
+          priv:
+            - 'ALL'
+          type: database
+          objs: db_jago
+          roles: jago
+          grant_option: yes
+
+        # GRANT admin, combo TO spinal, glacius WITH ADMIN OPTION
+        # Note that group role memberships apply cluster-wide and therefore are not
+        # restricted to database "db_glacius" here.
+        - name: db_glacius
+          state           : present
+          type            : group
+          objs            : "raiden"
+          roles           : "spinal,glacius"
+          admin_option    : yes
+
+    users_mongodb:
+      database:
+        - name: combo
+        - name: raiden
+      user:
+        ## mongo >= 2.6 create the first admin account and use it for create user.
+        - name: admin
+          database: admin
+          password: 'admin'
+          roles:
+            - userAdmin
+            - userAdminAnyDatabase
+            - readAnyDatabase
+        - name: sabrewulf
+          login_user: admin
+          login_password: 'admin'
+          database: combo
+          password: 'C8XR6FgsK9nME'
+          roles:
+            - readWrite
+        - name: raiden
+          login_user: admin
+          login_password: 'admin'
+          database: spinal
+          password: 'C8XR6FgsK9nME'
+          roles:
+            - readWrite
+            - dbAdmin
+            - read
+
+  roles:
+    - { role: awh-users,         tags: [ 'awh-users'] }
+
+  pre_tasks:
+    - name: "Kitchen | Set locale en_US.UTF-8 for pgsql"
+      locale_gen:
+        name: "en_US.UTF-8"
+        state: present
+
+    - name: "Kitchen | Installing Testing Package (RedHat). #1"
+      yum:
+        name: "{{ item }}"
+        state: installed
+      with_items:
+        - http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+      when: ansible_os_family|lower == 'redhat'
+      tags:
+        - kitchen
+        - test
+
+    - name: "Kitchen | Installing Testing Package (RedHat). #2"
+      yum:
+        name: "{{ item }}"
+        state: installed
+        update_cache: yes
+      with_items:
+        - mysql-server
+        - python-mysqldb
+      when: ansible_os_family|lower == 'redhat'
+      tags:
+        - kitchen
+        - test
+
+    - name: "Kitchen | Installing Testing Package (Debian)."
+      apt:
+        name: "{{ item }}"
+        state: installed
+        update_cache: yes
+      with_items:
+        - mysql-server
+        - postgresql
+        - mongodb
+      when: ansible_os_family|lower == 'debian'
+      tags:
+        - kitchen
+        - test
+
+    - name: "Kitchen | Start services."
+      service:
+        name: "{{item}}"
+        state: started
+      with_items:
+        - mysqld
+      when: ansible_os_family|lower  == 'redhat'
+      tags:
+        - kitchen
+        - test
+
+    - name: "Kitchen | fix | Ensure services is start."
+      shell: "/etc/init.d/{{item}} start"
+      with_items:
+        - mysql
+        - postgresql
+        - mongodb
+      when : ansible_os_family|lower  == "debian"
+      tags:
+        - kitchen
+        - test

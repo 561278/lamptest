@@ -1,0 +1,3 @@
+---
+php_version: '5.5'
+php_sapi: 'fpm'

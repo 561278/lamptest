@@ -1,0 +1,130 @@
+- name: Push vhosts configurations
+  template:
+    src  :  "{% if item.value.template is defined %}{{ item.value.template }}{% elif apache_vhosts_template is defined %}{{ apache_vhosts_template }}{% else %}vhosts.j2{% endif %}"
+    dest :  "{{ apache_vhost_dir }}/{{ item.key }}.conf"
+    owner: root
+    group: root
+    mode : 0444
+  with_dict: "{{ apache_vhosts|default({}) }}"
+  notify: reload apache
+  tags: apache_vhosts
+
+- name: Enable/Disable vhosts
+  file:
+    src  : "{% if item.value.state is defined and item.value.state == 'disabled' %}omit{% else %}{{ apache_vhost_dir_relative }}/{{ item.key }}.conf{% endif %}"
+    dest : "{% if item.value.priority is defined %}{{apache_vhost_enable_dir}}/{{ item.value.priority }}-{{ item.key }}.conf{% else %}{{ apache_vhost_enable_dir }}/{{ item.key }}.conf{% endif %}"
+    state: "{% if item.value.state is defined and item.value.state == 'disabled' %}absent{% else %}link{% endif %}"
+  with_dict: "{{ apache_vhosts|default({}) }}"
+  notify: reload apache
+
+- name: Create error log folder
+  file:
+    path: "{% if item.value.error_log['dest']|first != '/' %}{{ apache_logroot + '/' + item.value.error_log['dest']|dirname }}{% else %}{{ item.value.error_log['dest']|dirname }}{% endif %}"
+    state: directory
+    owner: "{{ item.value.error_log.owner|default('root') }}"
+    group: "{{ item.value.error_log.group|default('root') }}"
+    mode: "755"
+  with_dict: "{{ apache_vhosts|default({}) }}"
+  when:
+    - item.value.error_log is defined
+    - item.value.error_log.dest is defined
+
+- name: Create access log folder
+  file:
+    path: "{% if item.value.access_log['dest']|first != '/' %}{{ apache_logroot + '/' + item.value.access_log['dest']|dirname }}{% else %}{{ item.value.access_log['dest']|dirname }}{% endif %}"
+    state: directory
+    owner: "{{ item.value.access_log.owner|default('root') }}"
+    group: "{{ item.value.access_log.group|default('root') }}"
+    mode: "755"
+  with_dict: "{{ apache_vhosts|default({}) }}"
+  when:
+    - item.value.access_log is defined
+    - item.value.access_log.dest is defined
+
+- name: Create SSL directory
+  file:
+    path : "{{ item.value.ssl['certs_dir'] }}"
+    state: directory
+    owner: "root"
+    group: "root"
+    mode : "0700"
+  with_dict: "{{ apache_vhosts|default({}) }}"
+  when:
+    - item.value.ssl is defined
+    - item.value.ssl.certs_dir is defined
+
+- name: Create self-signed SSL cert
+  shell: |
+         openssl req -newkey rsa:"{{ item.value.ssl['autosigned'].bit|default('2048') }}" -nodes -"{{ item.value.ssl['autosigned'].digest|default('sha256') }}" -x509 -subj "{{ item.value.ssl['autosigned'].subject|default('/C=FR/ST=Ile-De-France/L=Paris/O=IT/CN=${ansible_fqdn}') }}" -days "{{ item.value.ssl['autosigned'].day|default('365') }}" -keyout "{{ item.value.ssl['certs_dir'] }}/{{ item.value.servername|default(item.key) }}.key" -out "{{ item.value.ssl['certs_dir'] }}/{{ item.value.servername|default(item.key) }}.crt" -extensions "{{ item.value.ssl['autosigned'].extensions|default('v3_ca') }}"
+         chmod 0400 "{{ item.value.ssl['certs_dir'] }}/{{ item.value.servername|default(item.key) }}.key" "{{ item.value.ssl['certs_dir'] }}/{{ item.value.servername|default(item.key) }}.crt"
+  args:
+    creates: "{{ item.value.ssl['certs_dir'] }}/{{ item.value.servername|default(item.key) }}.crt"
+
+  with_dict: "{{ apache_vhosts|default([]) }}"
+  when:
+    - item.value.ssl is defined
+    - item.value.ssl.certs_dir is defined
+    - item.value.ssl.autosigned is defined
+  notify: reload apache
+
+- name: Copy SSL files
+  copy:
+    src    : "{{ item.value.ssl['ssl_src']}}/"
+    dest   : "{{ item.value.ssl['certs_dir'] }}/"
+    owner  : "root"
+    group  : "root"
+    mode   : "0400"
+  with_dict: "{{ apache_vhosts|default({}) }}"
+  when:
+    - item.value.ssl is defined
+    - item.value.ssl.ssl_src is defined
+
+- name: Create DocumentRoot
+  file:
+    path : "{{ item.value.documentroot['path']|default(item.value.documentroot) }}"
+    src  : "{{ item.value.documentroot['link']|default(omit) }}"
+    state: "{% if item.value.documentroot['link'] is defined %}link{% else %}directory{% endif %}"
+    owner: "{{ item.value.documentroot['user']|default(apache_user) }}"
+    group: "{{ item.value.documentroot['group']|default(apache_group) }}"
+  with_dict: "{{ apache_vhosts|default({}) }}"
+  when:
+    - item.value.documentroot is defined
+    - item.value.documentroot.create|default(true)
+
+- name: Copy data dir using COPY
+  copy:
+    src  : "{{ item.value.documentroot['data'].source }}/"
+    dest : "{{ item.value.documentroot['path']|default(item.value.documentroot) }}"
+    owner: "{{ item.value.documentroot['user']|default(apache_user) }}"
+    group: "{{ item.value.documentroot['group']|default(apache_group) }}"
+    mode : "{{ item.value.documentroot['mode']|default(omit) }}"
+  with_dict: "{{ apache_vhosts|default({}) }}"
+  when:
+    - apache_data and item.value.documentroot is defined
+    - item.value.documentroot.data is defined and item.value.documentroot['data'].provider is defined and item.value.documentroot['data'].provider == 'copy'
+
+- name: Copy data dir using CONTENT
+  copy:
+    content: "{{ item.value.documentroot['data'].content }}/"
+    dest : "{{ item.value.documentroot['path']|default(item.value.documentroot) }}/{{ item.value.documentroot['data'].dest }}"
+    owner: "{{ item.value.documentroot['user']|default(apache_user) }}"
+    group: "{{ item.value.documentroot['group']|default(apache_group) }}"
+    mode : "{{ item.value.documentroot['mode']|default(omit) }}"
+  with_dict: "{{ apache_vhosts|default({}) }}"
+  when:
+    - apache_data and item.value.documentroot is defined
+    - item.value.documentroot.data is defined and item.value.documentroot['data'].provider is defined and item.value.documentroot['data'].provider == 'content'
+
+- name: Copy data dir using GIT
+  git:
+    repo   : "{{ item.value.documentroot['data'].repo }}"
+    dest   : "{{ item.value.documentroot['path']|default(item.value.documentroot) }}"
+    version: "{{ item.value.documentroot['data'].version|default('master') }}"
+    update : "{{ item.value.documentroot['data'].update|default(omit)|bool }}"
+    bare   : "{{ item.value.documentroot['data'].bare|default(omit)|bool }}"
+    force  : "{{ item.value.documentroot['data'].force|default(omit)|bool }}"
+    refspec: "{{ item.value.documentroot['data'].refspec|default(omit) }}"
+  with_dict: "{{ apache_vhosts|default({}) }}"
+  when:
+    - apache_data and item.value.documentroot is defined
+    - item.value.documentroot.data is defined and item.value.documentroot['data'].provider is defined and item.value.documentroot['data'].provider == 'git'

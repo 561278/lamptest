@@ -1,0 +1,8 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+<IfModule mod_negotiation.c>
+          LanguagePriority {{ apache_modules['negotiation'].language_priority|default(['en', 'ca', 'cs', 'da', 'de', 'el', 'eo', 'es', 'et', 'fr', 'he', 'hr', 'it', 'ja', 'ko', 'ltz', 'nl', 'nn', 'no', 'pl', 'pt', 'pt-BR', 'ru', 'sv', 'zh-CN', 'zh-TW'])|join(' ') }}
+          ForceLanguagePriority {{ apache_modules['negotiation'].force_language_priority|default(['Prefer', 'Fallback'])|join(' ') }}
+</IfModule>

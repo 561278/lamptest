@@ -1,0 +1,19 @@
+SSLProxyEngine On
+{% if item.value.ssl_proxy['verify'] is defined %}
+SSLProxyVerify {{ item.value.ssl_proxy['verify'] }}
+{% endif %}
+{% if item.value.ssl_proxy['check_peer_cn'] is defined %}
+SSLProxyCheckPeerCN     {{ item.value.ssl_proxy['check_peer_cn'] }}
+{% endif %}
+{% if item.value.ssl_proxy['check_peer_name'] is defined %}
+SSLProxyCheckPeerName   {{ item.value.ssl_proxy['check_peer_name'] }}
+{% endif %}
+{% if item.value.ssl_proxy['machine_cert'] is defined %}
+SSLProxyMachineCertificateFile "{{ item.value.ssl_proxy['machine_cert'] }}"
+{% endif %}
+{% if item.value.ssl_proxy['machine_chain'] is defined %}
+SSLProxyMachineCertificateChainFile "{{ item.value.ssl_proxy['machine_chain'] }}"
+{% endif %}
+{% if item.value.ssl_proxy['protocol'] is defined %}
+SSLProxyProtocol  {{ item.value.ssl_proxy['protocol']|join(' ') }}
+{% endif %}

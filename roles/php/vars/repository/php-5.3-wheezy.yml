@@ -1,0 +1,21 @@
+---
+# PHP 5.3 / Wheezy - Repository par default.
+
+php_repo:
+  'php_repository':
+    url          : "http://packages.dotdeb.org"
+    distribution : 'squeeze'
+    key          : "https://www.dotdeb.org/dotdeb.gpg"
+    section      : 'all'
+    id           : 89DF5277
+    state        : 'present'
+    pin          : 'o=packages.dotdeb.org'
+    pin_packages : '*php*'
+    pin_priority : '{{ php_pin_priority }}'
+
+  # add squeeze archive for dependancy modules
+  'php_squeeze_dependancy':
+    url          : 'http://archive.debian.org/debian'
+    distribution : 'squeeze'
+    section      : 'main contrib non-free'
+    state        : 'present'

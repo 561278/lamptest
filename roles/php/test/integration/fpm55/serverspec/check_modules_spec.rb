@@ -1,0 +1,1 @@
+../../specs/check_modules_spec.rb

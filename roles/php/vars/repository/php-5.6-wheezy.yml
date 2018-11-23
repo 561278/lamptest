@@ -1,0 +1,25 @@
+---
+# PHP 5.6 / Wheezy - Repository par default.
+
+php_repo:
+  'php_repository':
+    url          : "http://packages.dotdeb.org"
+    distribution : 'wheezy-php56'
+    key          : "https://www.dotdeb.org/dotdeb.gpg"
+    section      : all
+    id           : 89DF5277
+    state        : present
+    pin          : 'o=packages.dotdeb.org'
+    pin_packages : '*php*'
+    pin_priority : 990
+  'php_dotdeb_wheezy':
+    url          : "http://packages.dotdeb.org"
+    distribution : 'wheezy'
+    key          : "https://www.dotdeb.org/dotdeb.gpg"
+    section      : all
+    id           : 89DF5277
+    state        : present
+    pin          : 'o=packages.dotdeb.org'
+    pin_packages : '*'
+    pin_priority : '{{ php_pin_priority }}'
+

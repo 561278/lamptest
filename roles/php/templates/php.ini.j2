@@ -1,0 +1,7 @@
+; {{ ansible_managed }}
+
+{% set php_config_union = php_ini_default|combine(php_ini) %}
+
+{% for  key, value in php_config_union.iteritems()|sort %}
+{{ key }} = {{ value  }}
+{% endfor %}

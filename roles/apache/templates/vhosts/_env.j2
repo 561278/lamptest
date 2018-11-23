@@ -1,0 +1,16 @@
+{% if item.value.env['setenv'] is defined %}
+{% for env in item.value.env['setenv'] %}
+SetEnv {{ env }}
+{% endfor %}
+{% endif %}
+{% if item.value.env['setenvif'] is defined %}
+{% for env in item.value.env['setenvif']  %}
+SetEnvIf {{ env }}
+{% endfor %}
+{% endif %}
+{% if item.value.env['passenv'] is defined %}
+PassEnv {{ item.value.env['passenv']|join(' ')  }}
+{% endif %}
+{% if item.value.env['unsetenv'] is defined %}
+UnsetEnv {{ item.value.env['unsetenv']|join(' ')  }}
+{% endif %}

@@ -1,0 +1,447 @@
+---
+stages:
+- empty
+- fpm5x
+- fpm7x
+
+before_script:
+  - bundle install > /dev/null
+
+after_script:
+  - kitchen destroy > /dev/null
+
+empty-debian-wheezy-23:
+  stage: empty
+  script:
+    - kitchen test empty-debian-wheezy-23
+  except:
+    - tags
+
+empty-debian-jessie-23:
+  stage: empty
+  script:
+    - kitchen test empty-debian-jessie-23
+  except:
+    - tags
+
+empty-centos-6-23:
+  stage: empty
+  script:
+    - kitchen test empty-centos-6-23
+  except:
+    - tags
+
+empty-centos-7-23:
+  stage: empty
+  script:
+    - kitchen test empty-centos-7-23
+  except:
+    - tags
+
+fpm53-debian-wheezy-23:
+  stage: fpm5x
+  script:
+    - kitchen test fpm53-debian-wheezy-23
+  except:
+    - tags
+
+fpm54-debian-wheezy-23:
+  stage: fpm5x
+  script:
+    - kitchen test fpm54-debian-wheezy-23
+  except:
+    - tags
+
+fpm54-centos-6-23:
+  stage: fpm5x
+  script:
+    - kitchen test fpm54-centos-6-23
+  except:
+    - tags
+
+fpm55-debian-wheezy-23:
+  stage: fpm5x
+  script:
+    - kitchen test fpm55-debian-wheezy-23
+  except:
+    - tags
+
+fpm55-centos-6-23:
+  stage: fpm5x
+  script:
+    - kitchen test fpm55-centos-6-23
+  except:
+    - tags
+
+fpm56-debian-wheezy-23:
+  stage: fpm5x
+  script:
+    - kitchen test fpm56-debian-wheezy-23
+  except:
+    - tags
+
+fpm56-debian-jessie-23:
+  stage: fpm5x
+  script:
+    - kitchen test fpm56-debian-jessie-23
+  except:
+    - tags
+
+fpm56-debian-stretch-23:
+  stage: fpm5x
+  script:
+    - kitchen test fpm56-debian-stretch-23
+  except:
+    - tags
+
+fpm56-ubuntu-trusty-23:
+  stage: fpm5x
+  script:
+    - kitchen test fpm56-ubuntu-trusty-23
+  except:
+    - tags
+
+fpm56-centos-6-23:
+  stage: fpm5x
+  script:
+    - kitchen test fpm56-centos-6-23
+  except:
+    - tags
+
+fpm56-centos-7-23:
+  stage: fpm5x
+  script:
+    - kitchen test fpm56-centos-7-23
+  except:
+    - tags
+
+fpm70-debian-jessie-23:
+  stage: fpm7x
+  script:
+    - kitchen test fpm70-debian-jessie-23
+  except:
+    - tags
+
+fpm70-debian-stretch-23:
+  stage: fpm7x
+  script:
+    - kitchen test fpm70-debian-stretch-23
+  except:
+    - tags
+
+fpm70-ubuntu-trusty-23:
+  stage: fpm7x
+  script:
+    - kitchen test fpm70-ubuntu-trusty-23
+  except:
+    - tags
+
+fpm70-ubuntu-xenial-23:
+  stage: fpm7x
+  script:
+    - kitchen test fpm70-ubuntu-xenial-23
+  except:
+    - tags
+
+fpm70-centos-6-23:
+  stage: fpm7x
+  script:
+    - kitchen test fpm70-centos-6-23
+  except:
+    - tags
+
+fpm70-centos-7-23:
+  stage: fpm7x
+  script:
+    - kitchen test fpm70-centos-7-23
+  except:
+    - tags
+
+fpm71-debian-jessie-23:
+  stage: fpm7x
+  script:
+    - kitchen test fpm71-debian-jessie-23
+  except:
+    - tags
+
+fpm71-debian-stretch-23:
+  stage: fpm7x
+  script:
+    - kitchen test fpm71-debian-stretch-23
+  except:
+    - tags
+
+fpm71-ubuntu-trusty-23:
+  stage: fpm7x
+  script:
+    - kitchen test fpm71-ubuntu-trusty-23
+  except:
+    - tags
+
+fpm71-centos-6-23:
+  stage: fpm7x
+  script:
+    - kitchen test fpm71-centos-6-23
+  except:
+    - tags
+
+fpm71-centos-7-23:
+  stage: fpm7x
+  script:
+    - kitchen test fpm71-centos-7-23
+  except:
+    - tags
+
+fpm72-debian-jessie-23:
+  stage: fpm7x
+  script:
+    - kitchen test fpm72-debian-jessie-23
+  except:
+    - tags
+
+fpm72-debian-stretch-23:
+  stage: fpm7x
+  script:
+    - kitchen test fpm72-debian-stretch-23
+  except:
+    - tags
+
+fpm72-ubuntu-trusty-23:
+  stage: fpm7x
+  script:
+    - kitchen test fpm72-ubuntu-trusty-23
+  except:
+    - tags
+
+fpm72-centos-6-23:
+  stage: fpm7x
+  script:
+    - kitchen test fpm72-centos-6-23
+  except:
+    - tags
+
+fpm72-centos-7-23:
+  stage: fpm7x
+  script:
+    - kitchen test fpm72-centos-7-23
+  except:
+    - tags
+
+
+
+empty-debian-wheezy-24:
+  stage: empty
+  script:
+    - kitchen test empty-debian-wheezy-24
+  except:
+    - tags
+
+empty-debian-jessie-24:
+  stage: empty
+  script:
+    - kitchen test empty-debian-jessie-24
+  except:
+    - tags
+
+empty-centos-6-24:
+  stage: empty
+  script:
+    - kitchen test empty-centos-6-24
+  except:
+    - tags
+
+empty-centos-7-24:
+  stage: empty
+  script:
+    - kitchen test empty-centos-7-24
+  except:
+    - tags
+
+fpm53-debian-wheezy-24:
+  stage: fpm5x
+  script:
+    - kitchen test fpm53-debian-wheezy-24
+  except:
+    - tags
+
+fpm54-debian-wheezy-24:
+  stage: fpm5x
+  script:
+    - kitchen test fpm54-debian-wheezy-24
+  except:
+    - tags
+
+fpm54-centos-6-24:
+  stage: fpm5x
+  script:
+    - kitchen test fpm54-centos-6-24
+  except:
+    - tags
+
+fpm55-debian-wheezy-24:
+  stage: fpm5x
+  script:
+    - kitchen test fpm55-debian-wheezy-24
+  except:
+    - tags
+
+fpm55-centos-6-24:
+  stage: fpm5x
+  script:
+    - kitchen test fpm55-centos-6-24
+  except:
+    - tags
+
+fpm56-debian-wheezy-24:
+  stage: fpm5x
+  script:
+    - kitchen test fpm56-debian-wheezy-24
+  except:
+    - tags
+
+fpm56-debian-jessie-24:
+  stage: fpm5x
+  script:
+    - kitchen test fpm56-debian-jessie-24
+  except:
+    - tags
+
+fpm56-debian-stretch-24:
+  stage: fpm5x
+  script:
+    - kitchen test fpm56-debian-stretch-24
+  except:
+    - tags
+
+fpm56-ubuntu-trusty-24:
+  stage: fpm5x
+  script:
+    - kitchen test fpm56-ubuntu-trusty-24
+  except:
+    - tags
+
+fpm56-centos-6-24:
+  stage: fpm5x
+  script:
+    - kitchen test fpm56-centos-6-24
+  except:
+    - tags
+
+fpm56-centos-7-24:
+  stage: fpm5x
+  script:
+    - kitchen test fpm56-centos-7-24
+  except:
+    - tags
+
+fpm70-debian-jessie-24:
+  stage: fpm7x
+  script:
+    - kitchen test fpm70-debian-jessie-24
+  except:
+    - tags
+
+fpm70-debian-stretch-24:
+  stage: fpm7x
+  script:
+    - kitchen test fpm70-debian-stretch-24
+  except:
+    - tags
+
+fpm70-ubuntu-trusty-24:
+  stage: fpm7x
+  script:
+    - kitchen test fpm70-ubuntu-trusty-24
+  except:
+    - tags
+
+fpm70-ubuntu-xenial-24:
+  stage: fpm7x
+  script:
+    - kitchen test fpm70-ubuntu-xenial-24
+  except:
+    - tags
+
+fpm70-centos-6-24:
+  stage: fpm7x
+  script:
+    - kitchen test fpm70-centos-6-24
+  except:
+    - tags
+
+fpm70-centos-7-24:
+  stage: fpm7x
+  script:
+    - kitchen test fpm70-centos-7-24
+  except:
+    - tags
+
+fpm71-debian-jessie-24:
+  stage: fpm7x
+  script:
+    - kitchen test fpm71-debian-jessie-24
+  except:
+    - tags
+
+fpm71-debian-stretch-24:
+  stage: fpm7x
+  script:
+    - kitchen test fpm71-debian-stretch-24
+  except:
+    - tags
+
+fpm71-ubuntu-trusty-24:
+  stage: fpm7x
+  script:
+    - kitchen test fpm71-ubuntu-trusty-24
+  except:
+    - tags
+
+fpm71-centos-6-24:
+  stage: fpm7x
+  script:
+    - kitchen test fpm71-centos-6-24
+  except:
+    - tags
+
+fpm71-centos-7-24:
+  stage: fpm7x
+  script:
+    - kitchen test fpm71-centos-7-24
+  except:
+    - tags
+
+fpm72-debian-jessie-24:
+  stage: fpm7x
+  script:
+    - kitchen test fpm72-debian-jessie-24
+  except:
+    - tags
+
+fpm72-debian-stretch-24:
+  stage: fpm7x
+  script:
+    - kitchen test fpm72-debian-stretch-24
+  except:
+    - tags
+
+fpm72-ubuntu-trusty-24:
+  stage: fpm7x
+  script:
+    - kitchen test fpm72-ubuntu-trusty-24
+  except:
+    - tags
+
+fpm72-centos-6-24:
+  stage: fpm7x
+  script:
+    - kitchen test fpm72-centos-6-24
+  except:
+    - tags
+
+fpm72-centos-7-24:
+  stage: fpm7x
+  script:
+    - kitchen test fpm72-centos-7-24
+  except:
+    - tags

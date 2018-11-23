@@ -1,0 +1,20 @@
+---
+# Create default document root for site
+- name: "Create destination data dir"
+  file:
+    path: "{{ item.doc_root }}"
+    state: "{{ item.state|default('directory') }}" # (if state = link)
+    src: "{{item.state|default(omit)}}"
+    owner: "{{ item.user }}"
+    group: "{{ item.group }}"
+    recurse: "{{ item.recurse|default(yes) }}"
+  with_items: '{{php_sites}}'
+
+# Copy content of data dir
+- name: "Copy data dir"
+  copy:
+    src: "{{ item.path }}/{{ item.data }}/"
+    dest: "{{ item.doc_root }}"
+    owner: "{{ item.user }}"
+    group: "{{ item.group }}"
+  with_items: '{{php_sites}}'

@@ -1,0 +1,1 @@
+../../specs/check_service_spec.rb

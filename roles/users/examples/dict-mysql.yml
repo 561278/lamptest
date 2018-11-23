@@ -1,0 +1,28 @@
+---
+# Exemple de dictionnaires de données mysql
+
+users_mysql:
+  database:
+    - name: spinal
+      collation: utf8_general_ci
+      encoding : utf8
+    - name: fulgor
+    - name: smoke
+    - name: kitana
+      encoding : utf8
+    - name: cyrax
+      collation: latin1_swedish_ci
+  user:
+    - name: sabrewulf
+      password: 'C8XR6FgsK9nME'
+      priv:
+        - 'spinal.*:SELECT,INSERT'
+        - 'fulgor.user:ALL'
+      append_privs: yes
+    - name: raiden
+      password: 'AydPLY1GOSPAA'
+      priv:
+        - 'kitana.*:ALL'
+        - 'cyrax.*:ALL'
+      append_privs: yes
+

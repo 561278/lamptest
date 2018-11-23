@@ -1,0 +1,55 @@
+php_version: '7.2'
+php_sapi: 'fpm'
+
+php_modules: 
+  - 'cli'
+  - 'common'
+  - 'curl'
+  - 'mysql'
+  - 'gd'
+  - 'mysqlnd'
+  - 'intl'
+  - 'json'
+  - 'xml'
+  - 'tokenizer'
+  - 'mbstring'
+  - 'iconv'
+  - 'posix'
+  - 'zip'
+  - 'memcached'
+
+php_ini:
+  opcache.enable: '1'
+  opcache.memory_consumption: '128'
+  memory_limit: '128M'
+  file_uploads: 'On'
+  post_max_size: '32M'
+  upload_max_filesize: '32M'
+  max_input_vars: '2000'
+  short_open_tag: 'off'
+  magic_quotes_gpc: 'off'
+  register_globals: 'off'
+  session.autostart: 'off'
+#  allow_url_fopen: 'On'
+  #session_save_path: "\"{% for host in groups['olypprlamp'] %}tcp://{{ host }}:11212?persistent=1&weight=1&timeout=1&retry_interval=15{% if not loop.last %},{% endif %}{% endfor %}\""
+  error_log: 'syslog'
+
+
+php_ini_cli:
+  allow_url_fopen: 'On'
+  memory_limit: '-1'
+
+php_fpm:
+  pid: '/run/php7-fpm.pid'
+  emergency_restart_threshold : '30'
+  emergency_restart_interval  : '20s'
+  process_control_timeout     : '10s'
+  #rlimit_files: "1048576"
+  error_log: 'syslog'
+
+php_fpm_pools:
+
+  - name: 'lamptest'
+    user: momo
+    pm: 'static'
+    pm_max_children: '20'

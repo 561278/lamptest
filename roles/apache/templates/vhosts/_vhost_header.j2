@@ -1,0 +1,9 @@
+{% for ban_line in apache_ansible_managed -%}
+{{ ban_line }}
+{% endfor -%}
+
+<VirtualHost {{ item.value.bind|default(apache_bind)|first }}>
+        ServerName {{ item.value.servername|default(item.key) }}
+{% if item.value.serveradmin is defined %}
+        ServerAdmin {{ item.value.serveradmin }}
+{% endif %}

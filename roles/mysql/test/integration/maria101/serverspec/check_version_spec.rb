@@ -1,0 +1,1 @@
+../../specs/check_version_spec.rb

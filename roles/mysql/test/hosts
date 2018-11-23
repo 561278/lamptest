@@ -1,0 +1,6 @@
+127.0.0.1       localhost
+10.10.1.1       mysql-node1
+10.10.1.2       mysql-node2
+10.10.1.3       mysql-node3
+10.10.1.4       mysql-node4
+10.10.1.10      indus

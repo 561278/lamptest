@@ -1,0 +1,10 @@
+- name: "Fastcgi Server configurations"
+  template:
+    src  :  fastcgi.j2
+    dest :  "{{ apache_confd_dir }}/fastcgi-pool-{{ item.key }}.conf"
+    owner: root
+    group: root
+    mode : 0444
+  with_dict: "{{ apache_fastcgi }}"
+  notify: reload apache
+  tags: apache_fastcgi
